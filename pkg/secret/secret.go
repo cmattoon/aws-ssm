@@ -22,8 +22,6 @@ type Secret struct {
 	// This should be a base64-encoded value for Kubernetes
 	// [Ciphertext ->] Plaintext -> Value
 	Value string
-
-	Provider provider.Provider
 }
 
 // Sets and returns Value from Plaintext
@@ -34,9 +32,7 @@ func (s Secret) GetValue() (string) {
 	return s.Value
 }
 
+// Should decrypt if needed
 func (s Secret) GetPlaintext() (string) {
-	if s.Plaintext == "" {
-		s.Plaintext = s.Provider.GetDecryptedValue()
-	}
 	return s.Plaintext
 }
