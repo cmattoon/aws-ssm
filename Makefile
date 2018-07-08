@@ -1,3 +1,3 @@
-FILES=$(shell go list ./... | grep -v "/vendor/")
+#FILES=$(shell go list ./... | grep -v "/vendor/")
 build:
-	@go build $(FILES)
+	@go build
