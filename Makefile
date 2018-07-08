@@ -1,3 +1,6 @@
-#FILES=$(shell go list ./... | grep -v "/vendor/")
+
 build:
 	@go build
+
+container:
+	docker build -t cmattoon/aws-ssm .

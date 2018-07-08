@@ -1,0 +1,37 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: my-app
+  annotations:
+    alpha.ssm.cmattoon.com/secret-name: "my-secret"
+    alpha.ssm.cmattoon.com/secret-ns: "my-namespace"
+    alpha.ssm.cmattoon.com/secret-type: Opaque
+    alpha.ssm.cmattoon.com/ssm-params: ""
+    alpha.ssm.cmattoon.com/ssm-key: ""
+    
+spec:
+  containers:
+    - name: test-app
+      image: cmattoon/test
+      volumeMounts:
+        - name: my-secret-mount
+          readOnly: true
+          mountPath: /secret
+
+  volumes:
+    - name: my-secret-volume
+      secret:
+        secretName: {{my-secret}}
+        
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {my-secret}
+data:
+  user: foo
+  pass: bar
+  
+  
