@@ -13,8 +13,8 @@ type Controller struct {
 	Interval time.Duration
 }
 
+
 func NewController(cfg *config.Config) Controller {
-	
 	ctrl := Controller{
 		Interval: time.Duration(cfg.Interval) * time.Second,
 	}
@@ -23,6 +23,8 @@ func NewController(cfg *config.Config) Controller {
 
 func (c *Controller) RunOnce() error {
 	log.Info("Running...")
+
+	
 	return nil
 }
 
