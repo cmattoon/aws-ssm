@@ -7,7 +7,7 @@ import (
 
 
 type Provider interface {
-	GetParameter(string)(string)
+	GetParameterValue(string, bool) (string, error)
 }
 
 
