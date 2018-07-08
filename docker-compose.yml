@@ -1,0 +1,11 @@
+version: '3'
+services:
+
+  aws_ssm:
+    image: cmattoon/aws-ssm:latest
+    build:
+      context: .
+    environment:
+      AWS_ACCESS_KEY_ID: ""
+      AWS_ACCESS_KEY: ""
+        
