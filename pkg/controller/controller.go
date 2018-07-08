@@ -5,26 +5,36 @@ import (
 	"time"
 	
 	log "github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/cmattoon/aws-ssm/pkg/config"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
+	"github.com/cmattoon/aws-ssm/pkg/secret"
 )
 
 
 type Controller struct {
 	Interval time.Duration
 	Provider provider.Provider
+	KubeGen ClientGenerator
 }
 
 
-func NewController(cfg *config.Config) Controller {
+func NewController(cfg *config.Config) (*Controller) {
 	p, err := provider.NewProvider(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create provider: %s", err)
 	}
 	
-	ctrl := Controller{
+	scg := &SingletonClientGenerator {
+		KubeConfig: cfg.KubeConfig,
+		KubeMaster: cfg.KubeMaster,
+	}
+	
+	ctrl := &Controller{
 		Interval: time.Duration(cfg.Interval) * time.Second,
 		Provider: p,
+		KubeGen: scg,
 	}
 	
 	return ctrl
@@ -32,14 +42,20 @@ func NewController(cfg *config.Config) Controller {
 
 func (c *Controller) RunOnce() error {
 	log.Info("Running...")
+	cli, err := c.KubeGen.KubeClient()
+	if err != nil {
+		log.Fatalf("Error with kubernetes client: %s", err)
+	}
+
+	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{})
+	log.Infof("Found %d secrets\n", len(secrets.Items))
+	
 	name := "com.entic.foo"
 	decrypt := true
+
+	s := secret.NewSecret(c.Provider, name, name, decrypt)
 	
-	val, err := c.Provider.GetParameterValue(name, decrypt)
-	if err != nil {
-		log.Fatalf("Failed to get value: %s", err)
-	}
-	log.Infof("Got value %s", val)
+	log.Infof("Got value %s", s.Values)
 	return nil
 }
 
