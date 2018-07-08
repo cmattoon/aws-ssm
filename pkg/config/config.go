@@ -6,6 +6,7 @@ type Config struct {
 	KubeConfig           string
 	KubeMaster           string
 	MetricsListenAddress string
+	Provider             string
 }
 
 func DefaultConfig() *Config {
@@ -14,6 +15,7 @@ func DefaultConfig() *Config {
 		KubeConfig:           "",
 		KubeMaster:           "",
 		MetricsListenAddress: "127.0.0.1:9999",
+		Provider:             "aws",
 	}
 	return cfg
 }
