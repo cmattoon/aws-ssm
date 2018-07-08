@@ -9,7 +9,7 @@ import (
 
 type Secret struct {
 	
-	ParamKey string
+	ParamName string
 	ParamValue string
 	
 	SecretName string
@@ -21,6 +21,11 @@ type Secret struct {
 func NewSecret() Secret {
 	s := Secret{}
 	return s
+}
+
+func FromParam(p *param.AWSParameter) {
+	s := NewSecret()
+	s.ParamName
 }
 
 func (s Secret) GetManifest() (string) {
