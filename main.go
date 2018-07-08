@@ -9,8 +9,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/cmattoon/aws-param-store/pkg/config"
-	"github.com/cmattoon/aws-param-store/pkg/controller"
+	"github.com/cmattoon/aws-ssm/pkg/config"
+	"github.com/cmattoon/aws-ssm/pkg/controller"
 )
 
 

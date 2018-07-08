@@ -5,7 +5,7 @@ import (
 	"time"
 	
 	log "github.com/sirupsen/logrus"
-	"github.com/cmattoon/aws-param-store/pkg/config"
+	"github.com/cmattoon/aws-ssm/pkg/config"
 )
 
 

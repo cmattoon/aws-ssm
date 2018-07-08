@@ -3,8 +3,6 @@ package secret
 
 import (
 	b64 "encoding/base64"
-
-	"github.com/cmattoon/aws-param-store/pkg/provider"
 )
 
 type Secret struct {
