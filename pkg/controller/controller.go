@@ -1,24 +1,21 @@
 package controller
 
-
 import (
 	"time"
 	
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/client-go/kubernetes"
 	"github.com/cmattoon/aws-ssm/pkg/config"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
 	"github.com/cmattoon/aws-ssm/pkg/secret"
 )
-
 
 type Controller struct {
 	Interval time.Duration
 	Provider provider.Provider
 	KubeGen ClientGenerator
 }
-
 
 func NewController(cfg *config.Config) (*Controller) {
 	p, err := provider.NewProvider(cfg)
@@ -40,6 +37,22 @@ func NewController(cfg *config.Config) (*Controller) {
 	return ctrl
 }
 
+func (c *Controller) FindRelevantSecrets(cli kubernetes.Interface) (secretList []*secret.Secret) {
+	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{})
+	if err != nil {
+		log.Fatalf("Error retrieving secrets: %s", err)
+	}
+	
+	log.Infof("Found %d secrets", len(secrets.Items))
+	for _, sec := range secrets.Items {
+		obj, err := secret.FromKubernetesSecret(c.Provider, sec)
+		if err == nil {
+			secretList = append(secretList, obj)
+		}
+	}
+	return secretList
+}
+
 func (c *Controller) RunOnce() error {
 	log.Info("Running...")
 	cli, err := c.KubeGen.KubeClient()
@@ -47,15 +60,12 @@ func (c *Controller) RunOnce() error {
 		log.Fatalf("Error with kubernetes client: %s", err)
 	}
 
-	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{})
-	log.Infof("Found %d secrets\n", len(secrets.Items))
-	
-	name := "com.entic.foo"
-	decrypt := true
+	secrets := c.FindRelevantSecrets(cli)
 
-	s := secret.NewSecret(c.Provider, name, name, decrypt)
+	for _, s := range secrets {
+		log.Infof("Got Secret: %v", s)
+	}
 	
-	log.Infof("Got value %s", s.Values)
 	return nil
 }
 
