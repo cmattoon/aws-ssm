@@ -6,12 +6,14 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"k8s.io/api/core/v1"
-
+	"k8s.io/client-go/kubernetes"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
 	anno "github.com/cmattoon/aws-ssm/pkg/annotations"
+	
 )
 
 type Secret struct {
+	Secret v1.Secret
 	// Kubernetes Secret Name
 	Name string
 	// Kubernetes Namespace
@@ -28,8 +30,8 @@ type Secret struct {
 	Data map[string]string
 }
 
-
 func NewSecret(
+	sec v1.Secret,
 	p provider.Provider,
 	secret_name string,
 	secret_namespace string,
@@ -39,6 +41,7 @@ func NewSecret(
 ) (*Secret) {
 	
 	s := &Secret{
+		Secret: sec,
 		Name: secret_name,
 		Namespace: secret_namespace,
 		ParamName: param_name,
@@ -94,20 +97,27 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		}
 	}
 	
-	s := NewSecret(p, secret.ObjectMeta.Name, secret.ObjectMeta.Namespace,
+	s := NewSecret(
+		secret,
+		p,
+		secret.ObjectMeta.Name,
+		secret.ObjectMeta.Namespace,
 		param_name,
 		param_type,
 		param_key)
 
-	// Set 'secretValue' accoring to the Parameter value
-	for k, v := range secret.StringData {
-		s.Data[k] = v
-
-		if k == "secretValue" {
-			log.Infof("Overwriting key %s for secret %s", k, secret.ObjectMeta.Name)
-		}
+	// @todo - split list and set other values	
+	if k, ok := s.Data[s.ParamType]; ok {
+		log.Infof("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name)
+		log.Infof("Key will be overwriten")
 	}
 	
-	s.Data["secretValue"] = s.ParamValue
+	s.Data[s.ParamType] = s.ParamValue
 	return s, nil
+}
+
+func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
+	log.Info("Updating Kubernetes Secret...")
+	s.Secret.StringData = s.Data
+	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
