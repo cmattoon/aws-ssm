@@ -1,0 +1,18 @@
+language: go
+go:
+  - "1.x"
+  - "1.10"
+  - "1.11"
+install:
+  - go get -d -v ./...
+jobs:
+  include:
+    - stage: docker-build
+      script:
+        - docker build -t cmattoon/aws-ssm:latest .
+        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+        - docker push cmattoon/aws-ssm:latest
+stages:
+  - name: install
+  - name: docker-build
+    if: branch = master
