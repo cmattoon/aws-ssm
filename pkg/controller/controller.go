@@ -37,36 +37,43 @@ func NewController(cfg *config.Config) (*Controller) {
 	return ctrl
 }
 
-func (c *Controller) FindRelevantSecrets(cli kubernetes.Interface) (secretList []*secret.Secret) {
+func (c *Controller) HandleSecrets(cli kubernetes.Interface) (error) {
 	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalf("Error retrieving secrets: %s", err)
 	}
-	
+
+	i, j, k := 0, 0, 0	
 	for _, sec := range secrets.Items {
+		i += 1
+
 		obj, err := secret.FromKubernetesSecret(c.Provider, sec)
-		if err == nil {
-			secretList = append(secretList, obj)
+		if err != nil {
+			// Error: Irrelevant Secret
+			continue
 		}
+		j += 1
+
+		ksec, err := obj.UpdateObject(cli)
+		if err != nil {
+			log.Warnf("Failed to update object %s/%s", obj.Namespace, obj.Name)
+			continue
+		}
+		log.Infof("Updated %v", ksec)
+		k += 1
 	}
-	log.Infof("Found %d/%d secrets", len(secretList), len(secrets.Items))
-	return secretList
+	
+	log.Infof("Updated %v/%v secrets (of %v total secrets)", k, j, i)
+	return err
 }
 
-func (c *Controller) RunOnce() error {
+func (c *Controller) RunOnce() (error) {
 	log.Info("Running...")
 	cli, err := c.KubeGen.KubeClient()
 	if err != nil {
 		log.Fatalf("Error with kubernetes client: %s", err)
 	}
-
-	secrets := c.FindRelevantSecrets(cli)
-
-	for _, s := range secrets {
-		log.Infof("Got Secret: %v", *s)
-	}
-	
-	return nil
+	return c.HandleSecrets(cli)
 }
 
 func (c *Controller) Run(stopChan <-chan struct{}) {
