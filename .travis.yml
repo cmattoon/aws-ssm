@@ -13,7 +13,7 @@ jobs:
     - stage: docker-push
       script:
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - "docker push cmattoon/aws-ssm:$TRAVIS_JOB_NUMBER"
+        - "docker push cmattoon/aws-ssm:tci-$TRAVIS_JOB_NUMBER"
 stages:
   - name: install
   - name: docker-build
