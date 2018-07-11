@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
-	
 )
 
 type AWSProvider struct {
@@ -33,12 +32,16 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 }
 
 func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error) {
+	log.Debugf("GetParameterValue(%v, %v)", name, decrypt)
 	param, err := p.Service.GetParameter(&ssm.GetParameterInput{
 		Name: aws.String(name),
 		WithDecryption: aws.Bool(decrypt),
 	})
+	
 	if err != nil {
+		log.Debug("Failed to get value. Returning ''")
 		return "", err
 	}
+	
 	return *param.Parameter.Value, nil
 }

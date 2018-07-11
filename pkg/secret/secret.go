@@ -8,29 +8,62 @@ import (
 	"k8s.io/api/core/v1"
 
 	"github.com/cmattoon/aws-ssm/pkg/provider"
-	"github.com/cmattoon/aws-ssm/pkg/annotations"
+	anno "github.com/cmattoon/aws-ssm/pkg/annotations"
 )
 
 type Secret struct {
+	// Kubernetes Secret Name
 	Name string
+	// Kubernetes Namespace
 	Namespace string
+	// AWS Param Name
+	ParamName string
+	// AWS Param Type
+	ParamType string
+	// AWS Param Key (Default: "alias/aws/ssm")
+	ParamKey string
+	// AWS Param Value
 	ParamValue string
+	// The data to add to Kubernetes Secret Data
 	Data map[string]string
 }
 
 
-func NewSecret(p provider.Provider, name string, ns string, decrypt bool) (*Secret) {
+func NewSecret(
+	p provider.Provider,
+	secret_name string,
+	secret_namespace string,
+	param_name string,
+	param_type string,
+	param_key string,
+) (*Secret) {
+	
 	s := &Secret{
-		Name: name,
-		Namespace: ns,
+		Name: secret_name,
+		Namespace: secret_namespace,
+		ParamName: param_name,
+		ParamType: param_type,
+		ParamKey: param_key,
+		ParamValue: "",
 		Data: map[string]string{},
 	}
-	value, err := p.GetParameterValue(name, decrypt)
+	
+	log.Infof("Getting value for '%s/%s'", s.Namespace, s.Name)
+
+	decrypt := false
+	if s.ParamKey != "" {
+		decrypt = true
+	}
+	
+	value, err := p.GetParameterValue(s.ParamName, decrypt)
+	
 	if err != nil {
-		log.Infof("Couldn't get value for %s: %s", name, err)
+		log.Infof("Couldn't get value for %s/%s: %s",
+			s.Namespace, s.Name, err)
 	} else {
 		s.ParamValue = value
 	}
+	
 	return s
 }
 
@@ -41,11 +74,11 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	
 	for k, v := range secret.ObjectMeta.Annotations {
 		switch k {
-		case annotations.AwsParamName:
+		case anno.AWSParamName:
 			param_name = v
-		case annotations.AwsParamType:
+		case anno.AWSParamType:
 			param_type = v
-		case annotations.AwsParamKey:
+		case anno.AWSParamKey:
 			param_key = v
 		}
 	}
@@ -54,7 +87,6 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		return nil, errors.New("Irrelevant Secret")
 	}
 	
-	decrypt := false
 	if param_name != "" && param_type != "" {
 		if param_type == "SecureString" && param_key == "" {
 			log.Info("No KMS key defined. Using default key 'alias/aws/ssm'")
@@ -62,12 +94,10 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		}
 	}
 	
-	// If a KMS key is specified (aws-param-key), decrypt it
-	if param_key != "" {
-		decrypt = true
-	}
-		
-	s := NewSecret(p, secret.ObjectMeta.Name, secret.ObjectMeta.Namespace, decrypt)
+	s := NewSecret(p, secret.ObjectMeta.Name, secret.ObjectMeta.Namespace,
+		param_name,
+		param_type,
+		param_key)
 
 	// Set 'secretValue' accoring to the Parameter value
 	for k, v := range secret.StringData {

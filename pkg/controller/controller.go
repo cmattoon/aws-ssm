@@ -43,13 +43,13 @@ func (c *Controller) FindRelevantSecrets(cli kubernetes.Interface) (secretList [
 		log.Fatalf("Error retrieving secrets: %s", err)
 	}
 	
-	log.Infof("Found %d secrets", len(secrets.Items))
 	for _, sec := range secrets.Items {
 		obj, err := secret.FromKubernetesSecret(c.Provider, sec)
 		if err == nil {
 			secretList = append(secretList, obj)
 		}
 	}
+	log.Infof("Found %d/%d secrets", len(secretList), len(secrets.Items))
 	return secretList
 }
 
@@ -63,7 +63,7 @@ func (c *Controller) RunOnce() error {
 	secrets := c.FindRelevantSecrets(cli)
 
 	for _, s := range secrets {
-		log.Infof("Got Secret: %v", s)
+		log.Infof("Got Secret: %v", *s)
 	}
 	
 	return nil
