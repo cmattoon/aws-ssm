@@ -4,7 +4,7 @@ import (
 	"errors"
 	
 	log "github.com/sirupsen/logrus"
-
+	
 	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
@@ -64,6 +64,7 @@ func NewSecret(
 		log.Infof("Couldn't get value for %s/%s: %s",
 			s.Namespace, s.Name, err)
 	} else {
+		log.Info("Setting value to %v", value)
 		s.ParamValue = value
 	}
 	
@@ -109,10 +110,12 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	// @todo - split list and set other values	
 	if k, ok := s.Data[s.ParamType]; ok {
 		log.Infof("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name)
-		log.Infof("Key will be overwriten")
+		// Don't overwrite
 	}
-	
+	//} else {
 	s.Data[s.ParamType] = s.ParamValue
+	//base64.StdEncoding.EncodeToString([]byte(s.ParamValue))
+	// }
 	return s, nil
 }
 
