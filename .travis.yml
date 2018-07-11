@@ -2,7 +2,6 @@ language: go
 go:
   - "1.x"
   - "1.10"
-  - "1.11"
 install:
   - go get -d -v ./...
 jobs:
@@ -10,9 +9,13 @@ jobs:
     - stage: docker-build
       script:
         - docker build -t cmattoon/aws-ssm:latest .
+        
+    - stage: docker-push
+      script:
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:latest
+        - "docker push cmattoon/aws-ssm:$TRAVIS_JOB_NUMBER"
 stages:
   - name: install
   - name: docker-build
+  - name: docker-push
     if: branch = master
