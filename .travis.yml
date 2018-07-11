@@ -10,12 +10,22 @@ jobs:
       script:
         - docker build -t cmattoon/aws-ssm:latest .
         
-    - stage: docker-push
+    - stage: docker-push-branch
       script:
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
         - "docker push cmattoon/aws-ssm:tci-$TRAVIS_JOB_NUMBER"
+    - stage: docker-push-master
+      script:
+        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+        - "docker push cmattoon/aws-ssm:latest"
+
 stages:
   - name: install
   - name: docker-build
-  - name: docker-push
+
+  - name: docker-push-master
     if: branch = master
+
+  - name: docker-push-branch
+    if: branch != master
+    
