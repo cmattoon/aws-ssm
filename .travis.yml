@@ -13,7 +13,7 @@ jobs:
 
     - stage: docker-branch
       script:
-        - docker build -t cmattoon/aws-ssm:$TRAVIS_TAG .
+        - docker build -t cmattoon/aws-ssm:$TRAVIS_BRANCH .
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
         - "docker push cmattoon/aws-ssm:$TRAVIS_BRANCH"
 
