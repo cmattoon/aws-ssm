@@ -1,0 +1,17 @@
+{{- if eq true false }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-ssm-{{ .Release.Name }}
+  labels:
+    app: {{ template "ssm.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  AWS_REGION: "{{ .Values.aws_region }}"
+  KUBE_CONFIG: ""
+  MASTER_URL: "{{ .Values.master_url }}"
+  METRICS_URL: "localhost:{{ .Values.metrics_port }}"
+{{- end }}
