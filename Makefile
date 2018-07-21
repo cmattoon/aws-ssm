@@ -11,6 +11,10 @@ DOCKERFILE=Dockerfile
 
 AWS_SSM_EXE=build/aws-ssm
 
+.PHONY: test
+test:
+	./scripts/go_test.sh
+
 .PHONY: build
 build:
 	go build -o $(AWS_SSM_EXE)

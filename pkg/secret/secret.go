@@ -3,6 +3,7 @@ package secret
 import (
 	"errors"
 	"fmt"
+	"strings"
 	
 	log "github.com/sirupsen/logrus"
 	
@@ -108,6 +109,21 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		param_key)
 
 	return s, nil
+}
+
+func (s *Secret) ParseStringList() (values map[string]string, err error) {
+	if s.ParamType != "StringList" {
+		return nil, errors.New("Must be type StringList")
+	}
+
+	values = make(map[string]string)
+
+	for _, pair := range strings.Split(s.ParamValue, ",") {
+		kv := strings.SplitN(pair, "=", 2)
+		values[kv[0]] = kv[1]
+	}
+
+	return
 }
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
