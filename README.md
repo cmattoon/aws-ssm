@@ -21,9 +21,9 @@ metadata:
   name: my-secret
   annotations:
     "alpha.ssm.cmattoon.com/k8s-secret-name": my-secret
-	"alpha.ssm.cmattoon.com/aws-param-name": my_value
-	"alpha.ssm.cmattoon.com/aws-param-type": SecureString
-	"alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+    "alpha.ssm.cmattoon.com/aws-param-name": my_value
+    "alpha.ssm.cmattoon.com/aws-param-type": SecureString
+    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
 data: {}
 ```
 
@@ -39,9 +39,9 @@ metadata:
   name: my-secret
   annotations:
     "alpha.ssm.cmattoon.com/k8s-secret-name": my-secret
-	"alpha.ssm.cmattoon.com/aws-param-name": my_value
-	"alpha.ssm.cmattoon.com/aws-param-type": SecureString
-	"alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+    "alpha.ssm.cmattoon.com/aws-param-name": my_value
+    "alpha.ssm.cmattoon.com/aws-param-type": SecureString
+    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
 data:
   SecureString: foobar
 ```
