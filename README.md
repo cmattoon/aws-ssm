@@ -5,10 +5,24 @@ cmattoon/aws-ssm
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
 
+ * For example usage, see `example.yaml`
+ * Use the Helm chart to get up and running quickly
+
+
 Helm Chart
 ----------
 
 Use `AWS_REGION=<region> ./install_chart.sh` to install from source
+
+
+### Install Script Environment
+
+The following environment variables must be set for `install_chart.sh`:
+
+  - `AWS_REGION`
+  - `AWS_ACCESS_KEY`
+  - `AWS_SECRET_KEY`
+
 
 ### Values
 | Value        | Default          | Example                     | Description                                                      |

@@ -65,7 +65,6 @@ func NewSecret(
 		log.Infof("Couldn't get value for %s/%s: %s",
 			s.Namespace, s.Name, err)
 	} else {
-		log.Info("Setting value to %v", value)
 		s.ParamValue = value
 	}
 	
@@ -122,7 +121,7 @@ func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err 
 	if s.Secret.StringData == nil {
 		s.Secret.StringData = make(map[string]string)
 	}
-	//s.Data[s.ParamType] = s.ParamValue
+
 	s.Secret.StringData[s.ParamType] = s.ParamValue
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
