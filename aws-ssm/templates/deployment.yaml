@@ -16,6 +16,9 @@ spec:
         app: {{ template "ssm.name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ template "ssm.fullname" . }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
@@ -30,9 +33,12 @@ spec:
             httpGet:
               path: /healthz
               port: {{ .Values.metrics_port }}
-          envFrom:
-            - configMapRef:
-                name: aws-ssm-{{ .Release.Name }}
+          env:
+            - name: AWS_REGION
+              value: {{ .Values.aws_region }}
+              
+            - name: METRICS_URL
+              value: localhost:{{ .Values.metrics_port }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       {{- if .Values.nodeSelector }}

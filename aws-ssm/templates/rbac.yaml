@@ -1,0 +1,46 @@
+{{- if .Values.rbac.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "ssm.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "ssm.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+    verbs:
+      - create
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "ssm.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+subjects:
+  - name: {{ template "ssm.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+    kind: ServiceAccount
+roleRef:
+  name: {{ template "ssm.fullname" . }}
+  kind: ClusterRole
+{{- end }}

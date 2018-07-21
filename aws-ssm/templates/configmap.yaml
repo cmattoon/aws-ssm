@@ -1,3 +1,4 @@
+{{- if eq true false }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -13,4 +14,4 @@ data:
   KUBE_CONFIG: ""
   MASTER_URL: "{{ .Values.master_url }}"
   METRICS_URL: "localhost:{{ .Values.metrics_port }}"
-  
+{{- end }}

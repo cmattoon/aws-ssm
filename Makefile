@@ -24,3 +24,7 @@ container:
 chart:
 	helm lint aws-ssm
 
+.PHONY: push-container
+push-container: container
+	docker push $(CURRENT_IMAGE)
+	docker push $(LATEST_IMAGE)

@@ -8,12 +8,13 @@ Updates Kubernetes `Secrets` with values from AWS Parameter Store
 Helm Chart
 ----------
 
+Use `./install_chart.sh` to install from source
+
 ### Values
 | Value        | Default          | Example                     | Description                                                      |
 |--------------|------------------|-----------------------------|------------------------------------------------------------------|
 | aws_region   |                  | us-west-2                   | The AWS region in which the Pod is deployed                      |
 | kubeconfig64 |                  | <string>                    | The output of `$(cat $KUBE_CONFIG | base64)`. Stored as a Secret |
-| master_url   |                  | https://api.k8s.example.org | The Kubernetes Master API URL                                    |
 | metrics_port | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
 | replicas     | 1                | <int>                       | The number of Pods                                               |
 | image.name   | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
