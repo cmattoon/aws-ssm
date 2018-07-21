@@ -6,12 +6,6 @@ install:
   - go get -d -v ./...
 jobs:
   include:
-    - stage: docker-push-branch
-      script:
-        - docker build -t "cmattoon/aws-ssm:tci-$TRAVIS_JOB_NUMBER" .
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - "docker push cmattoon/aws-ssm:tci-$TRAVIS_JOB_NUMBER"
-        
     - stage: docker-push-master
       script:
         - docker build -t cmattoon/aws-ssm:latest .
@@ -33,9 +27,6 @@ stages:
   - name: docker-push-master
     if: branch = master
 
-  - name: docker-push-branch
-    if: branch != master
-    
   - name: docker-tag
-    if: branch = master AND tags = true
+    if: branch != master
     
