@@ -2,6 +2,7 @@ package secret
 
 import (
 	"errors"
+	"fmt"
 	
 	log "github.com/sirupsen/logrus"
 	
@@ -115,7 +116,7 @@ func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err 
 
 	if k, ok := s.Data[s.ParamType]; ok {
 		return nil,
-		errors.New("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name)
+		errors.New(fmt.Sprintf("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name))
 	}
 
 	//s.Data[s.ParamType] = s.ParamValue
