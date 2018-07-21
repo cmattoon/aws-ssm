@@ -7,7 +7,7 @@ jobs:
   include:
     - stage: docker-latest
       script:
-        - docker build -t cmattoon/aws-ssm:dev
+        - docker build -t cmattoon/aws-ssm:dev .
         - docker tag cmattoon/aws-ssm:dev cmattoon/aws-ssm:latest
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
         - docker push cmattoon/aws-ssm:dev
