@@ -18,6 +18,12 @@ jobs:
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
         - "docker push cmattoon/aws-ssm:latest"
 
+    - stage: docker-tag
+      script:
+        - docker build -t cmattoon/aws-ssm:$TRAVIS_TAG .
+        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+        - "docker push cmattoon/aws-ssm:$TRAVIS_TAG"
+        
 stages:
   - name: install
 
@@ -26,4 +32,7 @@ stages:
 
   - name: docker-push-branch
     if: branch != master
+    
+  - name: docker-tag
+    if: branch = master AND tag = true
     

@@ -8,7 +8,7 @@ Updates Kubernetes `Secrets` with values from AWS Parameter Store
 Helm Chart
 ----------
 
-Use `./install_chart.sh` to install from source
+Use `AWS_REGION=<region> ./install_chart.sh` to install from source
 
 ### Values
 | Value        | Default          | Example                     | Description                                                      |

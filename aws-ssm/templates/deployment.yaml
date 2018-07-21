@@ -38,7 +38,7 @@ spec:
               value: {{ .Values.aws_region }}
               
             - name: METRICS_URL
-              value: localhost:{{ .Values.metrics_port }}
+              value: 0.0.0.0:{{ .Values.metrics_port }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       {{- if .Values.nodeSelector }}
