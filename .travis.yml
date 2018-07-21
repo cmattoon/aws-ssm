@@ -23,7 +23,10 @@ jobs:
         - docker build -t cmattoon/aws-ssm:$TRAVIS_TAG .
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
         - "docker push cmattoon/aws-ssm:$TRAVIS_TAG"
-        
+branches:
+  only:
+    - master
+    - /^v.*$/
 stages:
   - name: install
 
@@ -34,5 +37,5 @@ stages:
     if: branch != master
     
   - name: docker-tag
-    if: branch = master AND tag = true
+    if: branch = master AND tags = true
     
