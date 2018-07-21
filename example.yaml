@@ -1,37 +1,43 @@
+# Given:
+#   - an AWS SSM Parameter AWS_TEST_SECRET='foobar' (SecureString, using default encryption key)
+# Provides:
+#   - An environment variable THE_SECRET='foobar' to the nginx container
+#
+# Test this file by launching aws-ssm, then run:
+#     kubectl apply -f example.yaml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  annotations:
+    alpha.ssm.cmattoon.com/aws-param-name: AWS_TEST_SECRET
+    alpha.ssm.cmattoon.com/aws-param-type: SecureString
+    alpha.ssm.cmattoon.com/aws-param-key: "alias/aws/ssm"
+data: {}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: my-app
-  annotations:
-    alpha.ssm.cmattoon.com/secret-name: "my-secret"
-    alpha.ssm.cmattoon.com/secret-ns: "my-namespace"
-    alpha.ssm.cmattoon.com/secret-type: Opaque
-    alpha.ssm.cmattoon.com/ssm-params: ""
-    alpha.ssm.cmattoon.com/ssm-key: ""
-    
+  name: test-pod
+  labels:
+    app: my-test
 spec:
-  containers:
-    - name: test-app
-      image: cmattoon/test
-      volumeMounts:
-        - name: my-secret-mount
-          readOnly: true
-          mountPath: /secret
+  template:
+    metadata:
+      labels:
+        app: my-test
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: THE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: test-secret
+                  key: SecureString
 
-  volumes:
-    - name: my-secret-volume
-      secret:
-        secretName: {{my-secret}}
-        
----
-apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: {my-secret}
-data:
-  user: foo
-  pass: bar
-  
-  
