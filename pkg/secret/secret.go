@@ -3,6 +3,7 @@ package secret
 import (
 	"errors"
 	"fmt"
+	"strings"
 	
 	log "github.com/sirupsen/logrus"
 	
@@ -110,18 +111,52 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	return s, nil
 }
 
-func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
-	log.Info("Updating Kubernetes Secret...")
-	
-	if k, ok := s.Data[s.ParamType]; ok {
-		return nil,
-		errors.New(fmt.Sprintf("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name))
+func (s *Secret) ParseStringList() (values map[string]string, err error) {
+	if s.ParamType != "StringList" {
+		return nil, errors.New("Must be type StringList")
 	}
 
+	values = make(map[string]string)
+	
+	for _, pair := range strings.Split(s.ParamValue, ",") {
+		kv := strings.SplitN(pair, "=", 2)
+		values[kv[0]] = kv[1]
+	}
+
+	return
+}
+
+func (s *Secret) Set(key string, val string) (err error) {
 	if s.Secret.StringData == nil {
 		s.Secret.StringData = make(map[string]string)
 	}
+	// StringData isn't populated initially, so check s.Data
+	if _, ok := s.Data[key]; ok {
+		// Refuse to overwite existing keys
+		return errors.New(fmt.Sprintf("Key '%s' already exists for Secret %s/%s", key, s.Namespace, s.Name))
+	}
+	s.Secret.StringData[key] = val
+	return 
+}
 
-	s.Secret.StringData[s.ParamType] = s.ParamValue
+func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
+	log.Info("Updating Kubernetes Secret...")
+
+	// Always set the "$ParamType" key:
+	//   String: Value
+	//   SecureString: Value
+	//   StringList: Value
+	s.Set(s.ParamType, s.ParamValue)
+
+	// If it's a StringList, attempt to set each k/v pair separately
+	if s.ParamType == "StringList" {
+		values, err := s.ParseStringList()
+		if err != nil {
+			for k, v := range values {
+				s.Set(k, v)
+			}
+		}
+	}
+
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
