@@ -23,8 +23,14 @@ jobs:
       script:
         - docker build -t cmattoon/aws-ssm:$TRAVIS_BRANCH .
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - "docker push cmattoon/aws-ssm:$TRAVIS_BRANCH"
+        - docker push cmattoon/aws-ssm:$TRAVIS_BRANCH
 
+    - stage: docker-pr
+      script:
+        - docker build -t cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST .
+        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+        - docker push cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST
+      
 branches:
   only:
     - dev
@@ -35,11 +41,13 @@ stages:
   - name: install
 
   - name: docker-stable
-    if: branch = master
+    if: branch = master AND type != pull_request
     
   - name: docker-latest
-    if: branch = dev
+    if: branch = dev AND type != pull_request
     
   - name: docker-branch
-    if: branch != master AND branch != dev
+    if: branch != master AND branch != dev AND type != pull_request
     
+  - name: docker-pr
+    if: type == pull_request
