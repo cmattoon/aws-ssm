@@ -7,9 +7,17 @@ jobs:
   include:
     - stage: docker-latest
       script:
-        - docker build -t cmattoon/aws-ssm:latest .
+        - docker build -t cmattoon/aws-ssm:dev
+        - docker tag cmattoon/aws-ssm:dev cmattoon/aws-ssm:latest
         - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - "docker push cmattoon/aws-ssm:latest"
+        - docker push cmattoon/aws-ssm:dev
+        - docker push cmattoon/aws-ssm:latest
+        
+    - stage: docker-stable
+      script:
+        - docker build -t cmattoon/aws-ssm:stable .
+        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+        - docker push cmattoon/aws-ssm:stable
 
     - stage: docker-branch
       script:
@@ -26,9 +34,12 @@ branches:
 stages:
   - name: install
 
-  - name: docker-latest
+  - name: docker-stable
     if: branch = master
-
+    
+  - name: docker-latest
+    if: branch = dev
+    
   - name: docker-branch
-    if: branch != master
+    if: branch != master AND branch != dev
     
