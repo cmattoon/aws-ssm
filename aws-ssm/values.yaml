@@ -1,0 +1,17 @@
+# AWS Region
+aws_region: ""
+# The contents of your ~/.kube/config, base64-encoded
+kubeconfig64: ""
+# URL to Kubernetes master API
+master_url: ""
+# Healthcheck stuff
+metrics_port: 9999
+# Number of replicas
+replicas: 1
+# Docker image for aws-ssm
+image:
+  name: cmattoon/aws-ssm
+  tag: latest
+# Pod Resources
+resources: {}
+  

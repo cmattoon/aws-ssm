@@ -1,0 +1,41 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "ssm.fullname" . }}
+  labels:
+    app: {{ template "ssm.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "ssm.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.metrics_port }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.metrics_port }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.metrics_port }}
+          envFrom:
+            - configMapRef:
+                name: aws-ssm-{{ .Release.Name }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
