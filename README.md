@@ -3,6 +3,12 @@ cmattoon/aws-ssm
 
 [![Build Status](https://travis-ci.org/cmattoon/aws-ssm.svg?branch=master)](https://travis-ci.org/cmattoon/aws-ssm)
 
+![GitHub tag](https://img.shields.io/github/tag/cmattoon/aws-ssm.svg)
+
+![Docker Pulls](https://img.shields.io/docker/pulls/cmattoon/aws-ssm.svg)
+
+
+
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
 
  * For example usage, see `example.yaml`
