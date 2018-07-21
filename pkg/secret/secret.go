@@ -107,20 +107,18 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		param_type,
 		param_key)
 
-	// @todo - split list and set other values	
-	if k, ok := s.Data[s.ParamType]; ok {
-		log.Infof("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name)
-		// Don't overwrite
-	}
-	//} else {
-	s.Data[s.ParamType] = s.ParamValue
-	//base64.StdEncoding.EncodeToString([]byte(s.ParamValue))
-	// }
 	return s, nil
 }
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
 	log.Info("Updating Kubernetes Secret...")
-	s.Secret.StringData = s.Data
+
+	if k, ok := s.Data[s.ParamType]; ok {
+		return nil,
+		errors.New("Key '%s' already exists in the Secret %s/%s", k, s.Namespace, s.Name)
+	}
+
+	//s.Data[s.ParamType] = s.ParamValue
+	s.Secret.StringData[s.ParamType] = s.ParamValue
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
