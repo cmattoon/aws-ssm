@@ -8,7 +8,7 @@
 ===============================================
 
  Release         : {{ .Release.Namespace }}/{{ .Release.Name }}
- AWS Region      : {{ .Values.aws_region }}
+ AWS Region      : {{ .Values.aws.region }}
  Master URL      : {{ .Values.master_url }}
  Docker Image    : {{ .Values.image.name }}:{{ .Values.image.tag }}
 

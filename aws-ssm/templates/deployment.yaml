@@ -35,10 +35,16 @@ spec:
               port: {{ .Values.metrics_port }}
           env:
             - name: AWS_REGION
-              value: {{ .Values.aws_region }}
+              value: {{ .Values.aws.region }}
               
             - name: METRICS_URL
               value: 0.0.0.0:{{ .Values.metrics_port }}
+
+            - name: AWS_ACCESS_KEY
+              value: "{{ .Values.aws.access_key }}"
+
+            - name: AWS_SECRET_KEY
+              value: "{{ .Values.aws.secret_key }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       {{- if .Values.nodeSelector }}
