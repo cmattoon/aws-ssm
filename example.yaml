@@ -11,7 +11,7 @@ kind: Secret
 metadata:
   name: test-secret
   annotations:
-    alpha.ssm.cmattoon.com/aws-param-name: AWS_TEST_SECRET
+    alpha.ssm.cmattoon.com/aws-param-name: PROD_DB_NAME
     alpha.ssm.cmattoon.com/aws-param-type: SecureString
     alpha.ssm.cmattoon.com/aws-param-key: "alias/aws/ssm"
 data: {}
@@ -35,9 +35,8 @@ spec:
             - name: http
               containerPort: 80
           env:
-            - name: THE_SECRET
+            - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: test-secret
                   key: SecureString
-
