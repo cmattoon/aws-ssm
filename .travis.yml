@@ -1,8 +1,8 @@
 language: go
 go:
   - "1.10"
-install:
-  - go get -d -v ./...
+before_install:
+  - go get -t -v ./...
 script:
   - ./scripts/go_test.sh
 jobs:
@@ -33,8 +33,6 @@ branches:
     - /^v.*$/
 
 stages:
-  - name: install
-
   - name: docker-latest
     if: branch = master AND type != pull_request
     
