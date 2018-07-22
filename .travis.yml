@@ -3,6 +3,8 @@ go:
   - "1.10"
 install:
   - go get -d -v ./...
+script:
+  - ./scripts/go_test.sh
 jobs:
   include:
     - stage: docker-latest
@@ -41,3 +43,7 @@ stages:
     
   - name: docker-pr
     if: type == pull_request
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+  
