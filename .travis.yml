@@ -2,6 +2,7 @@ language: go
 go:
   - "1.10"
 before_install:
+  - go get -t -v ./...
   - ./scripts/go_test.sh
 jobs:
   include:
