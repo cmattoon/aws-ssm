@@ -25,7 +25,7 @@ Helm Chart
 
 ### Install Helm Chart
 
-First, export required variables, then run `make install`. This will result in your `$KUBE_CONFIG` being loaded as
+First, export required variables, then run `make install`.
 
 
     export AWS_REGION=<region>
