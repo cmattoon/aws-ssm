@@ -1,6 +1,19 @@
 	Changelog
 	=========
 
+	[0.1.2] - 2018-07-23
+	--------------------
+	### Security
+	- Removed a debug message that was dumping Secrets as %v. Plaintext values were logged
+	as a series of byte values
+
+	### Added
+	- Reasonable defaults for ENV in Dockerfile
+	
+	### Other
+	- Testing .travis.yml
+
+
 	[0.1.1] - 2018-07-23
 	--------------------
 	### Added

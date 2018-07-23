@@ -54,7 +54,7 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) (error) {
 		}
 		j += 1
 
-		ksec, err := obj.UpdateObject(cli)
+		_, err = obj.UpdateObject(cli)
 		if err != nil {
 			log.Warnf("Failed to update object %s/%s", obj.Namespace, obj.Name)
 			continue

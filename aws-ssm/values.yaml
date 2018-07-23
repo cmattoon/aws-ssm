@@ -12,7 +12,7 @@ replicas: 1
 # Docker image for aws-ssm
 image:
   name: cmattoon/aws-ssm
-  tag: v0.1.1
+  tag: v0.1.2
 # Pod Resources
 resources: {}
   

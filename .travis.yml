@@ -6,6 +6,9 @@ before_install:
 - "./scripts/go_test.sh"
 jobs:
   include:
+  - stage: make-build
+    script:
+      - make build
   - stage: docker-latest
     script:
     - docker build -t cmattoon/aws-ssm:dev .
@@ -28,6 +31,7 @@ branches:
   - master
   - "/^v.*$/"
 stages:
+- name: make-build
 - name: docker-latest
   if: branch = master AND type != pull_request
 - name: docker-branch
@@ -41,3 +45,6 @@ deploy:
   api_key:
     secure: LOwlKUR14QSuaf1g4m3NvIzIT8GxOPCosIDoUg8uCptp+sIIzalVnaLz7ulw+yyMzxvtPz5X7HezZ3vN84qWWdFezkc7pdgCHw2n9e6dLyWNTSLKi5MOrCcXEfhhd3odepvtQeFu+2vV5iJ/OTwdCdceV37gCreDLCm8V4bpBp8glSHafBaPNvJDPz4GnbC7a8Bj+IuyQe1heiFhbOe6kCqElfq/BJVxcRGB3qukyXQwUcj0Um+qMaMqRVMj973ZcahtzpWXNTu9jfE3mZKeeWfDd9sFJ8uCPPPJp9EwhIEeiG1TsCOR2vGpjeamQbI0f0f4n8dxFRDG+YtRwopSYJgGUnUEPxI+3V6lSN3f+dtMIwa1lbupbC1IW8U3s21NyEcEqBwXWYm+72G5X20RrKjKEUfKv9bzZbK61qztLx+D5i0vCv9oeIA1MF/tIybrHgCrw5VR4/SlxYZHYdFfNK/coZp/E6hICosMmuURmvPVAQ9h8IZVJWzOiXnUUszLPYwSmc+vih5JVJxqvHyu6H0cnCuiRPCeGCBD8Re95lCKYrB2vcw+mUZjcF9UYYh2Vf9BnduJE83M/O8pp6bc6CgadDXcDQ51vQzSl53cH8q+xPQN29JrKaNaOQ3F9zrWA70FGnyjecmgm+k5j9V/63jhUuRgoLFq9k/+b9GzYqo=
   file: build/aws-ssm
+  on:
+    tags: true
+
