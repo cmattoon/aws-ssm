@@ -5,11 +5,15 @@ services:
     image: cmattoon/aws-ssm:latest
     build:
       context: .
-    environment:
-      AWS_ACCESS_KEY: ""
-      AWS_SECRET_KEY: ""
-      
+    volumes:
+      - /path/to/.kube:/.kube
     ports:
       - "9999:9999"
+    environment:
+      KUBE_CONFIG: "/.kube/config"
+      AWS_REGION: ""
+      AWS_ACCESS_KEY: ""
+      AWS_SECRET_KEY: ""
+      MASTER_URL: ""
       
         
