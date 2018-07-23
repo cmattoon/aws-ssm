@@ -1,5 +1,14 @@
+#!/bin/bash
+echo "You probably don't wanna run this again"
+exit;
+
+
+DIR=$(pwd)
+
+HEADERFILE=$(mktemp)
+cat <<EOF > $HEADERFILE
 /**
- * Copyright 2018 Curtis Mattoon
+ * Copyright $(date +"%Y") Curtis Mattoon
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +22,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package annotations
+EOF
 
-const (
-	K8SSecretName = "alpha.ssm.cmattoon.com/k8s-secret-name"
-	K8SSecretType = "alpha.ssm.cmattoon.com/k8s-secret-type"
-	AWSParamName = "alpha.ssm.cmattoon.com/aws-param-name"
-	AWSParamType = "alpha.ssm.cmattoon.com/aws-param-type"
-	AWSParamKey = "alpha.ssm.cmattoon.com/aws-param-key"
-)
-
+for f in $(find . -name '*.go'); do
+    echo ">> $f"
+    tmp=$(mktemp)
+    cat $HEADERFILE > $tmp;
+    cat $f >> $tmp
+    mv $tmp $f
+    rm $tmp
+    echo " [Done]"
+done
+rm $HEADERFILE
