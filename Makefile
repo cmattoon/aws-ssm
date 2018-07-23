@@ -1,7 +1,14 @@
 .PHONY:
-DOCKER_REPO=cmattoon
-IMAGE_NAME=aws-ssm
-IMAGE_TAG:=$(shell git log -1 --pretty=format:"%h")
+AWS_REGION ?= us-west-2
+AWS_ACCESS_KEY ?= none
+AWS_SECRET_KEY ?= none
+
+RELEASE_NAME ?= aws-ssm
+RELEASE_NAMESPACE ?= kube-system
+
+DOCKER_REPO ?= cmattoon
+IMAGE_NAME ?= aws-ssm
+IMAGE_TAG ?= $(shell git log -1 --pretty=format:"%h")
 
 CURRENT_IMAGE=$(DOCKER_REPO)/$(IMAGE_NAME):$(IMAGE_TAG)
 LATEST_IMAGE=$(DOCKER_REPO)/$(IMAGE_NAME):latest
@@ -9,7 +16,11 @@ LATEST_IMAGE=$(DOCKER_REPO)/$(IMAGE_NAME):latest
 DOCKERFILE_DIR=.
 DOCKERFILE=Dockerfile
 
+# Output file
 AWS_SSM_EXE=build/aws-ssm
+
+CHART_DIR ?= $(IMAGE_NAME)
+EXTRA_ARGS ?= 
 
 .PHONY: test
 test:
@@ -31,4 +42,17 @@ chart:
 .PHONY: push-container
 push-container: container
 	docker push $(CURRENT_IMAGE)
-	docker push $(LATEST_IMAGE)
+
+.PHONY: install
+install:
+	helm upgrade --install $(RELEASE_NAME) \
+		--namespace $(RELEASE_NAMESPACE) \
+		--set image.tag=$(IMAGE_TAG) \
+	 	--set aws.region=$(AWS_REGION) \
+	 	--set aws.access_key=$(AWS_ACCESS_KEY) \
+	 	--set aws.secret_key=$(AWS_SECRET_KEY) \
+	 	$(EXTRA_ARGS) $(CHART_DIR)
+
+.PHONY: purge
+purge:
+	helm del --purge $(RELEASE_NAME)
