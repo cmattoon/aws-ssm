@@ -1,0 +1,5 @@
+ignore:
+  - "scripts"
+  - "build"
+  - ".*_test.go"
+  
