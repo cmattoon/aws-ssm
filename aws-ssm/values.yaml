@@ -3,8 +3,6 @@ aws:
   region: ""
   access_key: ""
   secret_key: ""
-# The contents of your ~/.kube/config, base64-encoded
-kubeconfig64: ""
 # URL to Kubernetes master API
 master_url: ""
 # Healthcheck stuff

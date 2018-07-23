@@ -1,8 +1,0 @@
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ template "ssm.fullname" . }}-kubeconfig
-data:
-  kube.config: "{{ .Values.kubeconfig64 }}"
-  

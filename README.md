@@ -12,23 +12,37 @@ Updates Kubernetes `Secrets` with values from AWS Parameter Store
  * For example usage, see `example.yaml`
  * Use the Helm chart to get up and running quickly
 
+Build Options
+-------------
+
+  * Helm Chart (recommended): `make {lint|install|purge}`
+  * Go: `make test && make build`
+  * Docker: `make container`
+
 
 Helm Chart
 ----------
 
-Use `AWS_REGION=<region> ./install_chart.sh` to install from source
+### Install Helm Chart
+
+First, export required variables, then run `make install`. This will result in your `$KUBE_CONFIG` being loaded as
 
 
-### Install Script Environment
+    export AWS_REGION=<region>
+    export AWS_SECRET_KEY=<secret>
+    export AWS_ACCESS_KEY=<access-key-id>
 
-The following environment variables must be set for `install_chart.sh`:
 
-  - `AWS_REGION`
-  - `AWS_ACCESS_KEY`
-  - `AWS_SECRET_KEY`
+### AWS User/Role
 
+The AWS credentials should be associated with an IAM user/role that has the following permissions:
+
+  - @todo
+  
 
 ### Values
+
+
 | Value        | Default          | Example                     | Description                                                      |
 |--------------|------------------|-----------------------------|------------------------------------------------------------------|
 | aws_region   |                  | us-west-2                   | The AWS region in which the Pod is deployed                      |
@@ -52,15 +66,17 @@ Run `make container` to build the Docker image
 Configuration
 -------------
 
-The following values can be provided via environment variables or CLI flags.
-CLI flags take precdence over environment variables
+The following app config values can be provided via environment variables or CLI flags.
+CLI flags take precdence over environment variables.
+
+A KUBE_CONFIG and MASTER_URL are only necessary when running outside of the cluster (e.g., dev)
 
 | Environment | Flag         | Default        | Description                      |
 |-------------|--------------|----------------|----------------------------------|
+| AWS_REGION  | -region      | us-west-2      | The AWS Region                   |
+| METRICS_URL | -metrics-url | 0.0.0.0:9999   | Address for healthchecks/metrics | 
 | KUBE_CONFIG | -kube-config |                | The path to the kube config file |
 | MASTER_URL  | -master-url  |                | The Kubernetes master API URL    |
-| METRICS_URL | -metrics-url | localhost:9999 | Address for healthchecks/metrics |
-| AWS_REGION  | -region      | us-west-2      | The AWS Region                   |
 
 
 MVP Working (go binary)
