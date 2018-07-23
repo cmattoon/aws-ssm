@@ -32,15 +32,7 @@ type Secret struct {
 	Data map[string]string
 }
 
-func NewSecret(
-	sec v1.Secret,
-	p provider.Provider,
-	secret_name string,
-	secret_namespace string,
-	param_name string,
-	param_type string,
-	param_key string,
-) (*Secret) {
+func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string) (*Secret) {
 	
 	s := &Secret{
 		Secret: sec,
@@ -111,11 +103,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	return s, nil
 }
 
-func (s *Secret) ParseStringList() (values map[string]string, err error) {
-	if s.ParamType != "StringList" {
-		return nil, errors.New("Must be type StringList")
-	}
-
+func (s *Secret) ParseStringList() (values map[string]string) {
 	values = make(map[string]string)
 	
 	for _, pair := range strings.Split(s.ParamValue, ",") {
@@ -150,11 +138,9 @@ func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err 
 
 	// If it's a StringList, attempt to set each k/v pair separately
 	if s.ParamType == "StringList" {
-		values, err := s.ParseStringList()
-		if err != nil {
-			for k, v := range values {
-				s.Set(k, v)
-			}
+		values := s.ParseStringList()
+		for k, v := range values {
+			s.Set(k, v)
 		}
 	}
 
