@@ -1,46 +1,43 @@
 language: go
 go:
-  - "1.10"
+- '1.10'
 before_install:
-  - go get -t -v ./...
-  - ./scripts/go_test.sh
+- go get -t -v ./...
+- "./scripts/go_test.sh"
 jobs:
   include:
-    - stage: docker-latest
-      script:
-        - docker build -t cmattoon/aws-ssm:dev .
-        - docker tag cmattoon/aws-ssm:dev cmattoon/aws-ssm:latest
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:dev
-        - docker push cmattoon/aws-ssm:latest
-        
-    - stage: docker-branch
-      script:
-        - docker build -t cmattoon/aws-ssm:$TRAVIS_BRANCH .
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:$TRAVIS_BRANCH
-
-    - stage: docker-pr
-      script:
-        - docker build -t cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST .
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST
-      
+  - stage: docker-latest
+    script:
+    - docker build -t cmattoon/aws-ssm:dev .
+    - docker tag cmattoon/aws-ssm:dev cmattoon/aws-ssm:latest
+    - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker push cmattoon/aws-ssm:dev
+    - docker push cmattoon/aws-ssm:latest
+  - stage: docker-branch
+    script:
+    - docker build -t cmattoon/aws-ssm:$TRAVIS_BRANCH .
+    - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker push cmattoon/aws-ssm:$TRAVIS_BRANCH
+  - stage: docker-pr
+    script:
+    - docker build -t cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST .
+    - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker push cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST
 branches:
   only:
-    - master
-    - /^v.*$/
-
+  - master
+  - "/^v.*$/"
 stages:
-  - name: docker-latest
-    if: branch = master AND type != pull_request
-    
-  - name: docker-branch
-    if: branch != master AND type != pull_request
-    
-  - name: docker-pr
-    if: type == pull_request
-
+- name: docker-latest
+  if: branch = master AND type != pull_request
+- name: docker-branch
+  if: branch != master AND type != pull_request
+- name: docker-pr
+  if: type == pull_request
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
-  
+- bash <(curl -s https://codecov.io/bash)
+deploy:
+  provider: releases
+  api_key:
+    secure: LOwlKUR14QSuaf1g4m3NvIzIT8GxOPCosIDoUg8uCptp+sIIzalVnaLz7ulw+yyMzxvtPz5X7HezZ3vN84qWWdFezkc7pdgCHw2n9e6dLyWNTSLKi5MOrCcXEfhhd3odepvtQeFu+2vV5iJ/OTwdCdceV37gCreDLCm8V4bpBp8glSHafBaPNvJDPz4GnbC7a8Bj+IuyQe1heiFhbOe6kCqElfq/BJVxcRGB3qukyXQwUcj0Um+qMaMqRVMj973ZcahtzpWXNTu9jfE3mZKeeWfDd9sFJ8uCPPPJp9EwhIEeiG1TsCOR2vGpjeamQbI0f0f4n8dxFRDG+YtRwopSYJgGUnUEPxI+3V6lSN3f+dtMIwa1lbupbC1IW8U3s21NyEcEqBwXWYm+72G5X20RrKjKEUfKv9bzZbK61qztLx+D5i0vCv9oeIA1MF/tIybrHgCrw5VR4/SlxYZHYdFfNK/coZp/E6hICosMmuURmvPVAQ9h8IZVJWzOiXnUUszLPYwSmc+vih5JVJxqvHyu6H0cnCuiRPCeGCBD8Re95lCKYrB2vcw+mUZjcF9UYYh2Vf9BnduJE83M/O8pp6bc6CgadDXcDQ51vQzSl53cH8q+xPQN29JrKaNaOQ3F9zrWA70FGnyjecmgm+k5j9V/63jhUuRgoLFq9k/+b9GzYqo=
+  file: build/aws-ssm
