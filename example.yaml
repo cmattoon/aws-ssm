@@ -11,7 +11,7 @@ kind: Secret
 metadata:
   name: test-secret
   annotations:
-    alpha.ssm.cmattoon.com/aws-param-name: PROD_DB_NAME
+    alpha.ssm.cmattoon.com/aws-param-name: PROD_DB_PASSWORD
     alpha.ssm.cmattoon.com/aws-param-type: SecureString
     alpha.ssm.cmattoon.com/aws-param-key: "alias/aws/ssm"
 data: {}
