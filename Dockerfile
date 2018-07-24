@@ -25,7 +25,7 @@ ENV AWS_SECRET_KEY ""
 ENV METRICS_URL    "0.0.0.0:9999"
 
 # Only required if running outside the cluster
-ENV MASTER_URL     "https://kubernetes.default.svc.cluster.local"
+ENV MASTER_URL     ""
 ENV KUBE_CONFIG    ""
 
 COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
