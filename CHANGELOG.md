@@ -1,6 +1,11 @@
 	Changelog
 	=========
 
+	[0.1.3] - 2018-07-24
+	--------------------
+	### Added
+	- Docker multi-stage build (copies only the aws-ssm binary): 330MB -> 12MB
+
 	[0.1.2] - 2018-07-23
 	--------------------
 	### Security
@@ -9,7 +14,7 @@
 
 	### Added
 	- Reasonable defaults for ENV in Dockerfile
-	
+
 	### Other
 	- Testing .travis.yml
 
