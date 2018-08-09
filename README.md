@@ -5,6 +5,7 @@ cmattoon/aws-ssm
 ![GitHub tag](https://img.shields.io/github/tag/cmattoon/aws-ssm.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/cmattoon/aws-ssm.svg)
 [![codecov](https://codecov.io/gh/cmattoon/aws-ssm/branch/master/graph/badge.svg)](https://codecov.io/gh/cmattoon/aws-ssm)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cmattoon/aws-ssm)](https://goreportcard.com/report/github.com/cmattoon/aws-ssm)
 
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
