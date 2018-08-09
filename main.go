@@ -15,7 +15,6 @@
  */
 package main
 
-
 import (
 	"net/http"
 	"os"
@@ -28,16 +27,15 @@ import (
 	"github.com/cmattoon/aws-ssm/pkg/controller"
 )
 
-
 func main() {
 	cfg := config.DefaultConfig()
 	if err := cfg.ParseFlags(); err != nil {
 		log.Fatalf("Error parsing flags: %v", err)
 	}
 	log.Infof("Using config: %s", cfg)
-	
+
 	stopChan := make(chan struct{}, 1)
-	
+
 	go doMetrics(cfg.MetricsListenAddress)
 	go handleSigterm(stopChan)
 

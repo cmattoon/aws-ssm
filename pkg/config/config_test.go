@@ -38,7 +38,7 @@ func defaultsAreReasonable(cfg *Config) bool {
 }
 
 func TestDefaultConfig(t *testing.T) {
-        cfg := DefaultConfig()
+	cfg := DefaultConfig()
 
 	if !defaultsAreReasonable(cfg) {
 		t.Fail()
@@ -52,7 +52,7 @@ func TestDefaultConfig(t *testing.T) {
 // 	KUBE_MASTER := "https://master.kubernetes.example.com"
 // 	METRICS_ADDR := "127.0.0.1:1234"
 // 	REGION := "us-west-2"
-	
+
 // 	args := []string{
 // 		fmt.Sprintf("-kube-config %s", KUBE_CONFIG),
 // 		fmt.Sprintf("-master-url %s", KUBE_MASTER),
@@ -61,9 +61,9 @@ func TestDefaultConfig(t *testing.T) {
 // 	}
 // 	argv := os.Args
 // 	os.Args = args
-	
+
 // 	cfg := DefaultConfig()
-	
+
 // 	if !defaultsAreReasonable(cfg) {
 // 		fmt.Println("Defaults are not reasonable")
 // 		t.Fail()
@@ -76,7 +76,7 @@ func TestDefaultConfig(t *testing.T) {
 // 	}
 
 // 	os.Args = argv
-	
+
 // 	fmt.Printf("%v\n", *cfg)
 // 	if cfg.KubeConfig != KUBE_CONFIG { t.Fail() }
 // 	if cfg.KubeMaster != KUBE_MASTER { t.Fail() }

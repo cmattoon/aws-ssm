@@ -20,11 +20,9 @@ import (
 	"github.com/cmattoon/aws-ssm/pkg/config"
 )
 
-
 type Provider interface {
 	GetParameterValue(string, bool) (string, error)
 }
-
 
 func NewProvider(cfg *config.Config) (Provider, error) {
 	p, err := NewAWSProvider(cfg)
@@ -32,9 +30,8 @@ func NewProvider(cfg *config.Config) (Provider, error) {
 }
 
 type MockProvider struct {
-	Value string
+	Value          string
 	DecryptedValue string
-	
 }
 
 func (mp MockProvider) GetParameterValue(s string, b bool) (string, error) {
