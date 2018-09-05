@@ -1,6 +1,6 @@
 FROM library/golang:1.10-alpine
 
-RUN apk add --no-cache git
+RUN apk add --update --no-cache git ca-certificates
 
 WORKDIR /go/src/github.com/cmattoon/aws-ssm
 
