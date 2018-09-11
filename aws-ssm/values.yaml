@@ -3,6 +3,8 @@ aws:
   region: ""
   access_key: ""
   secret_key: ""
+# If != "", mounts /etc/ssl/certs in the container from {{ host_ssl_dir }}
+host_ssl_dir: ""
 # URL to Kubernetes master API
 master_url: ""
 # Healthcheck stuff

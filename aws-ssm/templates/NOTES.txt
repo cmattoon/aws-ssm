@@ -11,7 +11,7 @@
  AWS Region      : {{ .Values.aws.region }}
  Master URL      : {{ .Values.master_url }}
  Docker Image    : {{ .Values.image.name }}:{{ .Values.image.tag }}
+ RBAC Enabled    : {{ .Values.rbac.enabled }}
 
  List Pods:
      kubectl -n {{ .Release.Namespace }} get pods
-

@@ -1,6 +1,12 @@
 	Changelog
 	=========
 
+	[0.1.4] - 2018-09-11
+	--------------------
+	### Fixed
+	- Add ca-certificates package to final alpine image [Issue #7]
+	- Add Volume (Type=hostPath) for /etc/ssl/certs, to ensure AWS roots are available [Issue #7]
+
 	[0.1.3] - 2018-07-24
 	--------------------
 	### Added

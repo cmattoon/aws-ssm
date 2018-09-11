@@ -46,7 +46,7 @@ type Secret struct {
 	Data map[string]string
 }
 
-func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string) *Secret {
+func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string) (*Secret, error) {
 
 	s := &Secret{
 		Secret:     sec,
@@ -71,11 +71,12 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 	if err != nil {
 		log.Infof("Couldn't get value for %s/%s: %s",
 			s.Namespace, s.Name, err)
+		return nil, err
 	} else {
 		s.ParamValue = value
 	}
 
-	return s
+	return s, nil
 }
 
 func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error) {
@@ -105,7 +106,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		}
 	}
 
-	s := NewSecret(
+	s, err := NewSecret(
 		secret,
 		p,
 		secret.ObjectMeta.Name,
@@ -114,6 +115,9 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		param_type,
 		param_key)
 
+	if err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 

@@ -6,6 +6,7 @@ cmattoon/aws-ssm
 ![Docker Pulls](https://img.shields.io/docker/pulls/cmattoon/aws-ssm.svg)
 [![codecov](https://codecov.io/gh/cmattoon/aws-ssm/branch/master/graph/badge.svg)](https://codecov.io/gh/cmattoon/aws-ssm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cmattoon/aws-ssm)](https://goreportcard.com/report/github.com/cmattoon/aws-ssm)
+[![Maintainability](https://api.codeclimate.com/v1/badges/764dddb334f5dc9fb986/maintainability)](https://codeclimate.com/github/cmattoon/aws-ssm/maintainability)
 
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
@@ -43,17 +44,23 @@ The AWS credentials should be associated with an IAM user/role that has the foll
 
 ### Values
 
+The following chart values may be set. Only the required variables (AWS credentials) need provided by the user. Most of the time, the other
+defaults should work as-is.
 
-| Value        | Default          | Example                     | Description                                                      |
-|--------------|------------------|-----------------------------|------------------------------------------------------------------|
-| aws_region   |                  | us-west-2                   | The AWS region in which the Pod is deployed                      |
-| kubeconfig64 |                  | <string>                    | The output of `$(cat $KUBE_CONFIG | base64)`. Stored as a Secret |
-| metrics_port | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
-| replicas     | 1                | <int>                       | The number of Pods                                               |
-| image.name   | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
-| image.tag    | latest           | <docker-tag>                | The Docker tag for the image                                     |
-| resources    | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
-|              |                  |                             |                                                                  |
+
+| Req'd | Value          | Default          | Example                     | Description                                                      |
+|-------|----------------|------------------|-----------------------------|------------------------------------------------------------------|
+| YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
+| YES   | aws.access_key | ""               |                             |                                                                  |
+| YES   | aws.secret_key | ""               |                             |                                                                  |
+| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG | base64)`. Stored as a Secret |
+| NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
+| NO    | replicas       | 1                | <int>                       | The number of Pods                                               |
+| NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
+| NO    | image.tag      | latest           | <docker-tag>                | The Docker tag for the image                                     |
+| NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
+| NO    | host_ssl_dir   | ""               | /etc/ssl/certs              | If specified, mounts certs from the host.                        |
+| NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                      |
 
 
 Docker Container
@@ -127,3 +134,10 @@ Build
     make
     make container
 
+
+CA Certificates
+---------------
+
+For ease of use, the `ca-certificates` package is installed on the final `library/alpine` image. If you're having SSL/TLS
+connection issues, `export HOST_SSL_DIR=/etc/ssl/certs` before running `make install`. This will mount the SSL cert directory
+on the EC2 instance.
