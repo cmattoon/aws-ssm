@@ -89,10 +89,13 @@ func TestSetRefusesToOverwriteKey(t *testing.T) {
 	}
 }
 
-func TestNewSecretSetsValue(t *testing.T) {
+func TestSetsValue(t *testing.T) {
 	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError"}
 	s := v1.Secret{}
-	testSecret := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "")
+	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "")
+	if err != nil {
+		t.Fail()
+	}
 	if testSecret.ParamValue != "FooBar123" {
 		t.Fail()
 	}
@@ -102,8 +105,10 @@ func TestNewSecretSetsValue(t *testing.T) {
 func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
 	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
 	s := v1.Secret{}
-	testSecret := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key")
-
+	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key")
+	if err != nil {
+		t.Fail()
+	}
 	if testSecret.ParamValue != p.DecryptedValue {
 		t.Fail()
 	}
