@@ -1,5 +1,0 @@
-package: github.com/cmattoon/aws-ssm
-import:
-  - package: k8s.io/client-go
-    version: v8.0.0
-    
