@@ -12,8 +12,6 @@ RUN make test-dkr
 
 RUN make build-dkr
 
-RUN make install
-
 ##
 ## Stage 2
 ##

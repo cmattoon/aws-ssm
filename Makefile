@@ -45,11 +45,9 @@ test-dkr:
 
 .PHONY: build-dkr
 build-dkr:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-	go build -v -a \
-		-installsuffix ego \
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -a \
 		-ldflags="$(LDFLAGS)" \
-		-o $(AWS_SSM_EXE)
+		-o /go/bin/aws-ssm
 
 .PHONY: build
 build:
