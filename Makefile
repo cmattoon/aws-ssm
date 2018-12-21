@@ -8,7 +8,7 @@ RELEASE_NAMESPACE ?= kube-system
 
 DOCKER_REPO       ?= cmattoon
 IMAGE_NAME        ?= aws-ssm
-IMAGE_TAG         ?= $(shell git log -1 --pretty=format:"%h")
+IMAGE_TAG         ?= $(shell git describe --tags --always --dirty)
 
 CURRENT_IMAGE      = $(DOCKER_REPO)/$(IMAGE_NAME):$(IMAGE_TAG)
 LATEST_IMAGE       = $(DOCKER_REPO)/$(IMAGE_NAME):latest
