@@ -7,6 +7,7 @@ cmattoon/aws-ssm
 [![codecov](https://codecov.io/gh/cmattoon/aws-ssm/branch/master/graph/badge.svg)](https://codecov.io/gh/cmattoon/aws-ssm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cmattoon/aws-ssm)](https://goreportcard.com/report/github.com/cmattoon/aws-ssm)
 [![Maintainability](https://api.codeclimate.com/v1/badges/764dddb334f5dc9fb986/maintainability)](https://codeclimate.com/github/cmattoon/aws-ssm/maintainability)
+[![Anchore Image Overview](https://anchore.io/service/badges/image/7d144c4a4e096c3f87c563080ea1279aed19e718ccdf12a6b7436e086090d3b3)](https://anchore.io/image/dockerhub/cmattoon%2Faws-ssm%3Alatest)
 
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
