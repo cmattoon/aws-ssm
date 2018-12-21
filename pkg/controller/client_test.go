@@ -35,3 +35,15 @@ func TestNewKubeClientReturnsInClusterConfig(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestKubeClientReturnsClient(t *testing.T) {
+	scg := &SingletonClientGenerator{
+		KubeConfig: "",
+		KubeMaster: "",
+		client:     nil,
+	}
+	_, err := scg.KubeClient()
+	if err != nil && err.Error() != fmt.Sprintf("invalid configuration: %s", k8s.ErrEmptyConfig.Error()) {
+		t.Fail()
+	}
+}
