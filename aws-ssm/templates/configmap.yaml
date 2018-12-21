@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "ssm.fullname" . }}
+  labels:
+    app: {{ template "ssm.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  AWS_REGION: {{ .Values.aws.region }}
+  AWS_SSM_REGION: {{ .Values.aws.region }}
+  AWS_SSM_METRICS_URL: {{ .Values.metrics_port }}
+  AWS_SSM_KUBE_CONFIG: {{ .Values.kubeconfig }}
+  AWS_SSM_MASTER_URL: {{ .Values.master_url }}
+  AWS_SSM_INTERVAL: "{{ .Values.interval }}"

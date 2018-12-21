@@ -61,6 +61,7 @@ defaults should work as-is.
 | NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                               |
 | NO    | host_ssl_dir   | ""               | /etc/ssl/certs              | If specified, mounts certs from the host.                         |
 | NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                       |
+| NO    | interval       | 30               | 60                          | Polling interval, in seconds                                      |
 
 
 Docker Container
@@ -79,12 +80,17 @@ CLI flags take precdence over environment variables.
 
 A KUBE_CONFIG and MASTER_URL are only necessary when running outside of the cluster (e.g., dev)
 
-| Environment | Flag         | Default        | Description                      |
-|-------------|--------------|----------------|----------------------------------|
-| AWS_REGION  | -region      | us-west-2      | The AWS Region                   |
-| METRICS_URL | -metrics-url | 0.0.0.0:9999   | Address for healthchecks/metrics | 
-| KUBE_CONFIG | -kube-config |                | The path to the kube config file |
-| MASTER_URL  | -master-url  |                | The Kubernetes master API URL    |
+Note the AWS SDK also uses `AWS_REGION`, `AWS_ACCESS_KEY`, and `AWS_SECRET_KEY`
+
+
+| Environment         | Flag          | Default        | Description              |
+|---------------------|---------------|----------------|--------------------------|
+| AWS_SSM_REGION      | --region      | us-west-2      | AWS Region               |
+| AWS_SSM_METRICS_URL | --metrics-url | 9999           | Metrics port             |
+| AWS_SSM_KUBE_CONFIG | --kube-config | ""             | Kube config              |
+| AWS_SSM_MASTER_URL  | --master-url  | ""             | Master URL               |
+| AWS_SSM_INTERVAL    | --interval    | 60             | Polling interval (sec)   |
+
 
 
 MVP Working (go binary)

@@ -9,6 +9,8 @@ host_ssl_dir: ""
 master_url: ""
 # Healthcheck stuff
 metrics_port: 9999
+# Polling interval (sec)
+interval: 60
 # Number of replicas
 replicas: 1
 # Docker image for aws-ssm

@@ -42,13 +42,10 @@ spec:
             httpGet:
               path: /healthz
               port: {{ .Values.metrics_port }}
+          envFrom:
+            configMapRef:
+              - name: {{ template "ssm.fullname" . }}
           env:
-            - name: AWS_REGION
-              value: {{ .Values.aws.region }}
-              
-            - name: METRICS_URL
-              value: 0.0.0.0:{{ .Values.metrics_port }}
-
             - name: AWS_ACCESS_KEY
               value: "{{ .Values.aws.access_key }}"
 
