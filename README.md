@@ -17,7 +17,7 @@ Updates Kubernetes `Secrets` with values from AWS Parameter Store
 Build Options
 -------------
 
-  * Helm Chart (recommended): `make {lint|install|purge}`
+  * Helm Chart (recommended): `make {lint|install|install-chart|purge}`
   * Go: `make test && make build`
   * Docker: `make container`
 
@@ -27,7 +27,7 @@ Helm Chart
 
 ### Install Helm Chart
 
-First, export required variables, then run `make install`.
+First, export required variables, then run `make install-chart`.
 
 
     export AWS_REGION=<region>
@@ -145,5 +145,5 @@ CA Certificates
 ---------------
 
 For ease of use, the `ca-certificates` package is installed on the final `library/alpine` image. If you're having SSL/TLS
-connection issues, `export HOST_SSL_DIR=/etc/ssl/certs` before running `make install`. This will mount the SSL cert directory
+connection issues, `export HOST_SSL_DIR=/etc/ssl/certs` before running `make install-chart`. This will mount the SSL cert directory
 on the EC2 instance.

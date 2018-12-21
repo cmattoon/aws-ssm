@@ -1,12 +1,10 @@
 .git
 *~
 build/**
-scripts/**
 docker-compose.yml
 environment.yaml
 example.yaml
 glide.yaml
 LICENSE
-Makefile
 README.md
 CODE_OF_CONDUCT.md

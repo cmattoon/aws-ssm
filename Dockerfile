@@ -1,17 +1,24 @@
-FROM library/golang:1.10-alpine
+FROM library/golang:1.10-alpine AS builder
 
-RUN apk add --update --no-cache git
+RUN apk add --update --no-cache git ca-certificates make curl
 
 WORKDIR /go/src/github.com/cmattoon/aws-ssm
 
 COPY . .
 
-RUN go get -d -v ./...
+RUN make deps
 
-RUN go install -v ./...
+RUN make test-dkr
 
+RUN make build-dkr
+
+RUN make install
+
+##
 ## Stage 2
-FROM library/alpine
+##
+FROM library/alpine:3.8
+
 LABEL org.label-schema.schema-version = "1.0.0"
 LABEL org.label-schema.version = "0.1.4"
 LABEL org.label-schema.name = "aws-ssm"
@@ -22,14 +29,17 @@ LABEL org.label-schema.vcs-url = "https://github.com/cmattoon/aws-ssm"
 ENV AWS_REGION     ""
 ENV AWS_ACCESS_KEY ""
 ENV AWS_SECRET_KEY ""
-ENV METRICS_URL    "0.0.0.0:9999"
+
+ENV AWS_SSM_METRICS_URL "0.0.0.0:9999"
+ENV AWS_SSM_INTERVAL    "60"
 
 # Only required if running outside the cluster
-ENV MASTER_URL     ""
-ENV KUBE_CONFIG    ""
+ENV AWS_SSM_MASTER_URL  ""
+ENV AWS_SSM_KUBE_CONFIG ""
 
-RUN apk add --update ca-certificates
+COPY --from=builder /go/bin/aws-ssm /bin/aws-ssm
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
+USER nobody
 
-CMD ["aws-ssm"]
+ENTRYPOINT ["/bin/aws-ssm"]
