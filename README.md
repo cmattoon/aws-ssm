@@ -48,19 +48,19 @@ The following chart values may be set. Only the required variables (AWS credenti
 defaults should work as-is.
 
 
-| Req'd | Value          | Default          | Example                     | Description                                                      |
-|-------|----------------|------------------|-----------------------------|------------------------------------------------------------------|
-| YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
-| YES   | aws.access_key | ""               |                             |                                                                  |
-| YES   | aws.secret_key | ""               |                             |                                                                  |
-| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG | base64)`. Stored as a Secret |
-| NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
-| NO    | replicas       | 1                | <int>                       | The number of Pods                                               |
-| NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
-| NO    | image.tag      | latest           | <docker-tag>                | The Docker tag for the image                                     |
-| NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
-| NO    | host_ssl_dir   | ""               | /etc/ssl/certs              | If specified, mounts certs from the host.                        |
-| NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                      |
+| Req'd | Value          | Default          | Example                     | Description                                                       |
+|-------|----------------|------------------|-----------------------------|-------------------------------------------------------------------|
+| YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                       |
+| YES   | aws.access_key | ""               |                             |                                                                   |
+| YES   | aws.secret_key | ""               |                             |                                                                   |
+| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG \| base64)`. Stored as a Secret |
+| NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                           |
+| NO    | replicas       | 1                | <int>                       | The number of Pods                                                |
+| NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                     |
+| NO    | image.tag      | latest           | <docker-tag>                | The Docker tag for the image                                      |
+| NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                               |
+| NO    | host_ssl_dir   | ""               | /etc/ssl/certs              | If specified, mounts certs from the host.                         |
+| NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                       |
 
 
 Docker Container

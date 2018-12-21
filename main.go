@@ -28,10 +28,7 @@ import (
 )
 
 func main() {
-	cfg := config.DefaultConfig()
-	if err := cfg.ParseFlags(); err != nil {
-		log.Fatalf("Error parsing flags: %v", err)
-	}
+	cfg := config.NewFromArgs(os.Args[1:])
 	log.Infof("Using config: %s", cfg)
 
 	stopChan := make(chan struct{}, 1)

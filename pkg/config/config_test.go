@@ -16,7 +16,22 @@
 package config
 
 import (
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+var (
+	overriddenConfig = &Config{
+		AWSRegion:            "eu-central-1",
+		Interval:             60,
+		KubeConfig:           "/opt/kube.config",
+		KubeMaster:           "http://master.k8s.local",
+		MetricsListenAddress: "0.0.0.0:1234",
+		Provider:             "aws",
+	}
 )
 
 func TestGetenvReturnsEnvironmentValueIfSet(t *testing.T) {
@@ -33,53 +48,84 @@ func TestGetenvReturnsDefaultValueIfNotSet(t *testing.T) {
 	}
 }
 
-func defaultsAreReasonable(cfg *Config) bool {
-	return (cfg.KubeConfig == "" && cfg.KubeMaster == "" && cfg.MetricsListenAddress == "0.0.0.0:9999" && cfg.Provider == "aws")
-}
+func TestFlagsOverrideConfig(t *testing.T) {
+	for _, tc := range []struct {
+		title    string
+		env      map[string]string
+		args     []string
+		expected *Config
+	}{
+		{
+			title: "override everything with args (kingpin)",
+			env:   map[string]string{},
+			args: []string{
+				"--kube-config=/opt/kube.config",
+				"--master-url=http://master.k8s.local",
+				"--metrics-url=0.0.0.0:1234",
+				"--region=eu-central-1",
+				"--interval=60",
+			},
+			expected: overriddenConfig,
+		},
+		{
+			title: "override everything with env (kingpin)",
+			env: map[string]string{
+				"AWS_SSM_KUBE_CONFIG": "/opt/kube.config",
+				"AWS_SSM_MASTER_URL":  "http://master.k8s.local",
+				"AWS_SSM_METRICS_URL": "0.0.0.0:1234",
+				"AWS_SSM_REGION":      "eu-central-1",
+				"AWS_SSM_INTERVAL":    "60",
+			},
+			args:     []string{},
+			expected: overriddenConfig,
+		},
+		// {
+		// 	title: "override everything with args (deprecated)",
+		// 	env:   map[string]string{},
+		// 	args: []string{
+		// 		"-kube-config=/opt/kube.config",
+		// 		"-master-url=http://master.k8s.local",
+		// 		"-metrics-url=0.0.0.0:1234",
+		// 		"-region=eu-central-1",
+		// 		"-interval=60",
+		// 	},
+		// 	expected: overriddenConfig,
+		// },
+		// {
+		// 	title: "override everything with env (deprecated)",
+		// 	env: map[string]string{
+		// 		"KUBE_CONFIG":      "/opt/kube.config",
+		// 		"MASTER_URL":       "http://master.k8s.local",
+		// 		"METRICS_URL":      "0.0.0.0:1234",
+		// 		"AWS_REGION":       "eu-central-1",
+		// 		"AWS_SSM_INTERVAL": "60", // This couldn't be set before
+		// 	},
+		// 	args:     []string{},
+		// 	expected: overriddenConfig,
+		// },
+	} {
+		t.Run(tc.title, func(t *testing.T) {
+			env0 := _setenv(t, tc.env)
+			defer func() { _restore_env(t, env0) }()
 
-func TestDefaultConfig(t *testing.T) {
-	cfg := DefaultConfig()
-
-	if !defaultsAreReasonable(cfg) {
-		t.Fail()
+			cfg := NewFromArgs(tc.args)
+			assert.Equal(t, tc.expected, cfg)
+		})
 	}
 }
 
-// // Calling with no args should get the default config
-// func TestParseFlags(t *testing.T) {
+func _setenv(t *testing.T, e0 map[string]string) map[string]string {
+	e1 := map[string]string{}
 
-// 	KUBE_CONFIG := "/path/to/kube/config"
-// 	KUBE_MASTER := "https://master.kubernetes.example.com"
-// 	METRICS_ADDR := "127.0.0.1:1234"
-// 	REGION := "us-west-2"
+	for k, v := range e0 {
+		e1[k] = os.Getenv(v)
+		require.NoError(t, os.Setenv(k, v))
+	}
+	return e1
+}
 
-// 	args := []string{
-// 		fmt.Sprintf("-kube-config %s", KUBE_CONFIG),
-// 		fmt.Sprintf("-master-url %s", KUBE_MASTER),
-// 		fmt.Sprintf("-metrics-url %s", METRICS_ADDR),
-// 		fmt.Sprintf("-region %s", REGION),
-// 	}
-// 	argv := os.Args
-// 	os.Args = args
-
-// 	cfg := DefaultConfig()
-
-// 	if !defaultsAreReasonable(cfg) {
-// 		fmt.Println("Defaults are not reasonable")
-// 		t.Fail()
-// 	}
-
-// 	// No args shouldn't raise an error
-// 	if err := cfg.ParseFlags(); err != nil {
-// 		fmt.Printf("Error: %s\n", err.Error())
-// 		t.Fail()
-// 	}
-
-// 	os.Args = argv
-
-// 	fmt.Printf("%v\n", *cfg)
-// 	if cfg.KubeConfig != KUBE_CONFIG { t.Fail() }
-// 	if cfg.KubeMaster != KUBE_MASTER { t.Fail() }
-// 	if cfg.MetricsListenAddress != METRICS_ADDR { t.Fail() }
-// 	if cfg.AWSRegion != REGION { t.Fail() }
-// }
+func _restore_env(t *testing.T, e map[string]string) {
+	for k, v := range e {
+		require.NoError(t, os.Setenv(k, v))
+	}
+}

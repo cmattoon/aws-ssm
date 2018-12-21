@@ -16,8 +16,15 @@
 package config
 
 import (
-	"flag"
+	//"flag"
+	"log"
 	"os"
+
+	"github.com/alecthomas/kingpin"
+)
+
+var (
+	Version = "unknown"
 )
 
 func getenv(key string, default_value string) string {
@@ -38,45 +45,39 @@ type Config struct {
 	Provider             string
 }
 
-func DefaultConfig() *Config {
-	cfg := &Config{
-		AWSRegion:            "us-west-2",
-		Interval:             30,
-		KubeConfig:           "",
-		KubeMaster:           "",
-		MetricsListenAddress: "0.0.0.0:9999",
-		Provider:             "aws",
+var defaultConfig = &Config{
+	AWSRegion:            "us-west-2",
+	Interval:             30,
+	KubeConfig:           "",
+	KubeMaster:           "",
+	MetricsListenAddress: "0.0.0.0:9999",
+	Provider:             "aws",
+}
+
+func NewFromArgs(args []string) *Config {
+	cfg := &Config{}
+	if err := cfg.ParseFlags(args); err != nil {
+		log.Fatalf("Error parsing flags: %v", err)
 	}
+	cfg.Provider = "aws"
 	return cfg
 }
 
-func (cfg *Config) ParseFlags() error {
-	kubeConfig := flag.String("kube-config",
-		getenv("KUBE_CONFIG", ""),
-		"Path to kube config (~/.kube/config)")
+func (cfg *Config) ParseFlags(args []string) error {
+	app := kingpin.New("aws-ssm", "Creates Kubernetes Secrets from AWS SSM Parameter Store")
+	app.Version(Version)
+	app.DefaultEnvars()
 
-	kubeMaster := flag.String("master-url",
-		getenv("MASTER_URL", ""),
-		"Kubernetes Master URL (kubectl cluster-info)")
+	app.Flag("kube-config", "The kube config file to use").Default(defaultConfig.KubeConfig).StringVar(&cfg.KubeConfig)
+	app.Flag("master-url", "The kube master URL from 'kubectl cluster-info'").Default(defaultConfig.KubeMaster).StringVar(&cfg.KubeMaster)
+	app.Flag("metrics-url", "The address on which to serve health/metrics ('0.0.0.0:9999')").Default(defaultConfig.MetricsListenAddress).StringVar(&cfg.MetricsListenAddress)
+	app.Flag("region", "The AWS region").Default(defaultConfig.AWSRegion).StringVar(&cfg.AWSRegion)
+	app.Flag("interval", "The polling interval (in seconds)").Default(string(defaultConfig.Interval)).IntVar(&cfg.Interval)
 
-	metricAddr := flag.String("metrics-url",
-		getenv("METRICS_URL", "0.0.0.0:9999"),
-		"Address where metrics/healthz should be served (localhost:9999)")
-
-	region := flag.String("region",
-		getenv("AWS_REGION", "us-west-2"),
-		"AWS Region (us-west-2)")
-
-	interval := flag.Int("interval", 30, "Polling interval")
-	flag.Parse()
-
-	// Override config values from CLI
-	cfg.AWSRegion = *region
-	cfg.Interval = *interval
-	cfg.KubeConfig = *kubeConfig
-	cfg.KubeMaster = *kubeMaster
-	cfg.MetricsListenAddress = *metricAddr
-	cfg.Provider = "aws"
-
+	_, err := app.Parse(args)
+	if err != nil {
+		return err
+	}
 	return nil
+
 }

@@ -24,6 +24,10 @@ RBAC_ENABLED      ?= true
 HOST_SSL_DIR      ?= ""
 EXTRA_ARGS        ?= 
 
+.PHONY: deps
+deps:
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
 .PHONY: test
 test:
 	./scripts/go_test.sh
