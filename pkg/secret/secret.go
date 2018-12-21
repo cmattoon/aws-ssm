@@ -124,7 +124,8 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 func (s *Secret) ParseStringList() (values map[string]string) {
 	values = make(map[string]string)
 
-	for _, pair := range strings.Split(s.ParamValue, ",") {
+	for _, pair := range strings.Split(strings.TrimSpace(s.ParamValue), ",") {
+		pair = strings.TrimSpace(pair)
 		key := pair
 		val := ""
 

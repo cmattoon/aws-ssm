@@ -33,6 +33,16 @@ func TestParseStringList(t *testing.T) {
 		expected map[string]string
 	}{
 		{
+			title:    "parse empty value",
+			pvalue:   "",
+			expected: map[string]string{},
+		},
+		{
+			title:    "parse whitespace-only value",
+			pvalue:   "    ",
+			expected: map[string]string{},
+		},
+		{
 			title:  "parse some simple values",
 			pvalue: "key1=val1,key2=val2,key3=val3,key4=val4",
 			expected: map[string]string{
