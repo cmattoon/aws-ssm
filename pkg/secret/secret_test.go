@@ -16,37 +16,114 @@
 package secret
 
 import (
-	"reflect"
+	//"reflect"
 	"testing"
 
 	"github.com/cmattoon/aws-ssm/pkg/provider"
+	"github.com/stretchr/testify/assert"
+	//"github.com/stretchr/testify/require"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestParseStringList(t *testing.T) {
-	s := &Secret{
-		Name:       "test_secret",
-		Namespace:  "test",
-		ParamName:  "FOO_PARAM",
-		ParamType:  "StringList",
-		ParamKey:   "foo-param",
-		ParamValue: "key1=val1,key2=val2,key3=val3,key4=val4=true",
-		Data:       map[string]string{},
+	for _, tc := range []struct {
+		title    string
+		pvalue   string
+		expected map[string]string
+	}{
+		{
+			title:    "parse empty value",
+			pvalue:   "",
+			expected: map[string]string{},
+		},
+		{
+			title:    "parse whitespace-only value",
+			pvalue:   "    ",
+			expected: map[string]string{},
+		},
+		{
+			title:  "parse some simple values",
+			pvalue: "key1=val1,key2=val2,key3=val3,key4=val4",
+			expected: map[string]string{
+				"key1": "val1",
+				"key2": "val2",
+				"key3": "val3",
+				"key4": "val4",
+			},
+		},
+		{
+			title:  "parse equal sign in value",
+			pvalue: "key1=val1,key2=val2,key3=val3,key4=val4=true",
+			expected: map[string]string{
+				"key1": "val1",
+				"key2": "val2",
+				"key3": "val3",
+				"key4": "val4=true",
+			},
+		},
+		{
+			title:  "parse non-list",
+			pvalue: "key1",
+			expected: map[string]string{
+				"key1": "",
+			},
+		},
+		{
+			title:  "parse trailing comma",
+			pvalue: "key1=value1,",
+			expected: map[string]string{
+				"key1": "value1",
+			},
+		},
+		{
+			title:  "parse leading/trailing comma",
+			pvalue: ",key1=value1,key2=val2,key3=val3,",
+			expected: map[string]string{
+				"key1": "value1",
+				"key2": "val2",
+				"key3": "val3",
+			},
+		},
+		{
+			title:  "not a StringList",
+			pvalue: "asdfjkl",
+			expected: map[string]string{
+				"asdfjkl": "",
+			},
+		},
+		{
+			title:  "fine i guess",
+			pvalue: "ThIsMiGhTBeBaSe64==",
+			expected: map[string]string{
+				"ThIsMiGhTBeBaSe64": "=",
+			},
+		},
+		{
+			title:  "another StringList",
+			pvalue: "123,456,789",
+			expected: map[string]string{
+				"123": "",
+				"456": "",
+				"789": "",
+			},
+		},
+	} {
+		t.Run(tc.title, func(t *testing.T) {
+			s := &Secret{
+				Name:       "test_secret",
+				Namespace:  "test",
+				ParamName:  "FOO_PARAM",
+				ParamType:  "StringList",
+				ParamKey:   "some-string-list",
+				ParamValue: tc.pvalue,
+				Data:       map[string]string{},
+			}
+			data := s.ParseStringList()
+			assert.Equal(t, tc.expected, data)
+		})
 	}
 
-	expected := map[string]string{
-		"key1": "val1",
-		"key2": "val2",
-		"key3": "val3",
-		"key4": "val4=true",
-	}
-
-	data := s.ParseStringList()
-	eq := reflect.DeepEqual(data, expected)
-	if !eq {
-		t.Fail()
-	}
 }
 
 // Should set the key/value pair
