@@ -17,6 +17,7 @@ package provider
 
 import (
 	log "github.com/sirupsen/logrus"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -59,4 +60,25 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 	}
 
 	return *param.Parameter.Value, nil
+}
+
+func (p AWSProvider) GetParameterDataByPath(path string, decrypt bool) (map[string]string, error) {
+	// path is something like /path/to/env
+	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
+		Path:           aws.String(path),
+		Recursive:      aws.Bool(true),
+		WithDecryption: aws.Bool(decrypt),
+	})
+
+	if err != nil {
+		log.Fatal("Failed to get params by path '%s': %s", path, err)
+	}
+
+	results := make(map[string]string)
+	// '/path/to/env/foo' -> 'foo': *pa.Value
+	for _, pa := range params.Parameters {
+		basename := strings.Replace(*pa.Name, path, "", -1)
+		results[basename] = *pa.Value
+	}
+	return results, nil
 }

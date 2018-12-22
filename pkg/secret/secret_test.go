@@ -167,7 +167,7 @@ func TestSetRefusesToOverwriteKey(t *testing.T) {
 }
 
 func TestSetsValue(t *testing.T) {
-	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError"}
+	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError", make(map[string]string)}
 	s := v1.Secret{}
 	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "")
 	if err != nil {
@@ -180,7 +180,7 @@ func TestSetsValue(t *testing.T) {
 
 // When the encryption key is defined, the decrypted value should be returned
 func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{}
 	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key")
 	if err != nil {
@@ -192,7 +192,7 @@ func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
 }
 
 func TestFromKubernetesSecretReturnsErrorIfIrrelevant(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{} // No annotations, so no params
 
 	_, err := FromKubernetesSecret(p, s)
@@ -204,7 +204,7 @@ func TestFromKubernetesSecretReturnsErrorIfIrrelevant(t *testing.T) {
 // If the parameter is of Type=SecureString, and no key is supplied,
 // attempt to use the default key.
 func TestFromKubernetesSecretUsesDefaultEncryptionKey(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 
 	s := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -223,7 +223,7 @@ func TestFromKubernetesSecretUsesDefaultEncryptionKey(t *testing.T) {
 }
 
 func TestFromKubernetesSecretUsesSpecifiedEncryptionKey(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 
 	s := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{

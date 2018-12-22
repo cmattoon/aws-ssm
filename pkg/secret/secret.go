@@ -67,6 +67,15 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 	}
 
 	value, err := p.GetParameterValue(s.ParamName, decrypt)
+	if s.ParamType == "Directory" {
+		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt)
+		if err != nil {
+			log.Fatalf("Error getting path data: %s", err.Error())
+		}
+		for k, v := range all_params {
+			s.Set(k, v)
+		}
+	}
 
 	if err != nil {
 		log.Infof("Couldn't get value for %s/%s: %s",
@@ -166,6 +175,7 @@ func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err 
 	//   String: Value
 	//   SecureString: Value
 	//   StringList: Value
+	//   Directory: <ssm-path>
 	s.Set(s.ParamType, s.ParamValue)
 
 	// If it's a StringList, attempt to set each k/v pair separately

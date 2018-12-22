@@ -129,6 +129,22 @@ data:
 ```
 
 
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  annotations:
+    "alpha.ssm.cmattoon.com/k8s-secret-name": app-secrets
+    "alpha.ssm.cmattoon.com/aws-param-name": /path/to/env
+    "alpha.ssm.cmattoon.com/aws-param-type": Directory
+    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+data:
+  file1: value1
+  file2: value2
+```
+
+
 Build
 -----
 
