@@ -78,6 +78,8 @@ func (p AWSProvider) GetParameterDataByPath(path string, decrypt bool) (map[stri
 	// '/path/to/env/foo' -> 'foo': *pa.Value
 	for _, pa := range params.Parameters {
 		basename := strings.Replace(*pa.Name, path, "", -1)
+		log.Infof("Param %s -> %s = %s", *pa.Name, basename, *pa.Value)
+		log.Infof("Parameter: %+v", *pa)
 		results[basename] = *pa.Value
 	}
 	return results, nil

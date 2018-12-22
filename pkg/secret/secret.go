@@ -66,25 +66,27 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 		decrypt = true
 	}
 
-	value, err := p.GetParameterValue(s.ParamName, decrypt)
 	if s.ParamType == "Directory" {
 		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt)
 		if err != nil {
 			log.Fatalf("Error getting path data: %s", err.Error())
 		}
 		for k, v := range all_params {
-			s.Set(k, v)
+			log.Infof("Directory: Setting %s = %s", k, v)
+			s.Set(s.safeKeyName(k), v)
 		}
+		s.ParamValue = "true" // Reads "Directory": "true"
+		return s, nil
 	}
 
+	value, err := p.GetParameterValue(s.ParamName, decrypt)
 	if err != nil {
 		log.Infof("Couldn't get value for %s/%s: %s",
 			s.Namespace, s.Name, err)
 		return nil, err
-	} else {
-		s.ParamValue = value
 	}
 
+	s.ParamValue = value
 	return s, nil
 }
 
@@ -184,7 +186,16 @@ func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err 
 		for k, v := range values {
 			s.Set(k, v)
 		}
+	} else if s.ParamType == "Dictionary" {
+
 	}
 
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
+}
+
+func (s *Secret) safeKeyName(key string) string {
+	if strings.HasPrefix(key, "/") {
+		key = strings.Replace(key, "/", "", 1)
+	}
+	return strings.Replace(key, "/", "_", -1)
 }
