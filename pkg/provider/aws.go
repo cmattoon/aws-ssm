@@ -71,7 +71,7 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 	})
 
 	if err != nil {
-		log.Fatal("Failed to get params by path '%s': %s", ppath, err)
+		log.Fatalf("Failed to get params by path '%s': %s", ppath, err)
 	}
 
 	results := make(map[string]string)
