@@ -59,34 +59,51 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 		Data:       map[string]string{},
 	}
 
-	log.Infof("Getting value for '%s/%s'", s.Namespace, s.Name)
+	log.Debugf("Getting value for '%s/%s'", s.Namespace, s.Name)
 
 	decrypt := false
 	if s.ParamKey != "" {
 		decrypt = true
 	}
 
-	if s.ParamType == "Directory" {
+	if s.ParamType == "String" || s.ParamType == "SecureString" {
+		value, err := p.GetParameterValue(s.ParamName, decrypt)
+		if err != nil {
+			return nil, err
+		}
+		s.ParamValue = value
+	} else if s.ParamType == "StringList" {
+		value, err := p.GetParameterValue(s.ParamName, decrypt)
+		if err != nil {
+			return nil, err
+		}
+		s.ParamValue = value
+		// StringList: Also set each key
+		values := s.ParseStringList()
+		for k, v := range values {
+			s.Set(k, v)
+		}
+	} else if s.ParamType == "Directory" {
+		// Directory: Set each sub-key
 		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt)
 		if err != nil {
-			log.Fatalf("Error getting path data: %s", err.Error())
+			return nil, err
 		}
+
 		for k, v := range all_params {
-			log.Infof("Directory: Setting %s = %s", k, v)
 			s.Set(safeKeyName(k), v)
 		}
 		s.ParamValue = "true" // Reads "Directory": "true"
 		return s, nil
 	}
 
-	value, err := p.GetParameterValue(s.ParamName, decrypt)
-	if err != nil {
-		log.Infof("Couldn't get value for %s/%s: %s",
-			s.Namespace, s.Name, err)
-		return nil, err
-	}
+	// Always set the "$ParamType" key:
+	//   String: Value
+	//   SecureString: Value
+	//   StringList: Value
+	//   Directory: <ssm-path>
+	s.Set(s.ParamType, s.ParamValue)
 
-	s.ParamValue = value
 	return s, nil
 }
 
@@ -158,6 +175,7 @@ func (s *Secret) ParseStringList() (values map[string]string) {
 }
 
 func (s *Secret) Set(key string, val string) (err error) {
+	log.Debugf("Setting key=%s", key)
 	if s.Secret.StringData == nil {
 		s.Secret.StringData = make(map[string]string)
 	}
@@ -172,28 +190,11 @@ func (s *Secret) Set(key string, val string) (err error) {
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
 	log.Info("Updating Kubernetes Secret...")
-
-	// Always set the "$ParamType" key:
-	//   String: Value
-	//   SecureString: Value
-	//   StringList: Value
-	//   Directory: <ssm-path>
-	s.Set(s.ParamType, s.ParamValue)
-
-	// If it's a StringList, attempt to set each k/v pair separately
-	if s.ParamType == "StringList" {
-		values := s.ParseStringList()
-		for k, v := range values {
-			s.Set(k, v)
-		}
-	} else if s.ParamType == "Dictionary" {
-
-	}
-
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
 
 func safeKeyName(key string) string {
+	key = strings.TrimRight(key, "/")
 	if strings.HasPrefix(key, "/") {
 		key = strings.Replace(key, "/", "", 1)
 	}
