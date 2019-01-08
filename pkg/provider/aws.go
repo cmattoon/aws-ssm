@@ -48,14 +48,13 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 }
 
 func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error) {
-	log.Debugf("GetParameterValue(%v, %v)", name, decrypt)
 	param, err := p.Service.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(name),
 		WithDecryption: aws.Bool(decrypt),
 	})
 
 	if err != nil {
-		log.Debug("Failed to get value. Returning ''")
+		log.Errorf("Failed to GetParameterValue: %s", err)
 		return "", err
 	}
 
@@ -71,7 +70,8 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 	})
 
 	if err != nil {
-		log.Fatalf("Failed to get params by path '%s': %s", ppath, err)
+		log.Errorf("Failed to GetParameterDataByPath: %s", err)
+		return nil, err
 	}
 
 	results := make(map[string]string)
