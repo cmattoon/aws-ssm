@@ -16,14 +16,14 @@
 package provider
 
 import (
-	log "github.com/sirupsen/logrus"
-	"strings"
+	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
+	log "github.com/sirupsen/logrus"
 )
 
 type AWSProvider struct {
@@ -62,24 +62,22 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 	return *param.Parameter.Value, nil
 }
 
-func (p AWSProvider) GetParameterDataByPath(path string, decrypt bool) (map[string]string, error) {
-	// path is something like /path/to/env
+func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[string]string, error) {
+	// ppath is something like /path/to/env
 	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
-		Path:           aws.String(path),
+		Path:           aws.String(ppath),
 		Recursive:      aws.Bool(true),
 		WithDecryption: aws.Bool(decrypt),
 	})
 
 	if err != nil {
-		log.Fatal("Failed to get params by path '%s': %s", path, err)
+		log.Fatal("Failed to get params by path '%s': %s", ppath, err)
 	}
 
 	results := make(map[string]string)
 	// '/path/to/env/foo' -> 'foo': *pa.Value
 	for _, pa := range params.Parameters {
-		basename := strings.Replace(*pa.Name, path, "", -1)
-		log.Infof("Param %s -> %s = %s", *pa.Name, basename, *pa.Value)
-		log.Infof("Parameter: %+v", *pa)
+		_, basename := path.Split(*pa.Name)
 		results[basename] = *pa.Value
 	}
 	return results, nil

@@ -73,7 +73,7 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 		}
 		for k, v := range all_params {
 			log.Infof("Directory: Setting %s = %s", k, v)
-			s.Set(s.safeKeyName(k), v)
+			s.Set(safeKeyName(k), v)
 		}
 		s.ParamValue = "true" // Reads "Directory": "true"
 		return s, nil
@@ -193,7 +193,7 @@ func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err 
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
 
-func (s *Secret) safeKeyName(key string) string {
+func safeKeyName(key string) string {
 	if strings.HasPrefix(key, "/") {
 		key = strings.Replace(key, "/", "", 1)
 	}

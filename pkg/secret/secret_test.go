@@ -241,3 +241,14 @@ func TestFromKubernetesSecretUsesSpecifiedEncryptionKey(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestSafeKeyName(t *testing.T) {
+	keys := map[string]string{
+		"/foo/bar":     "foo_bar",
+		"//foo/bar":    "_foo_bar",
+		"/foo/bar/baz": "foo_bar_baz",
+	}
+	for path, exp := range keys {
+		assert.Equal(t, safeKeyName(path), exp)
+	}
+}
