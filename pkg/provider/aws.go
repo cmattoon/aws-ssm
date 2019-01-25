@@ -16,13 +16,14 @@
 package provider
 
 import (
-	log "github.com/sirupsen/logrus"
+	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
+	log "github.com/sirupsen/logrus"
 )
 
 type AWSProvider struct {
@@ -47,16 +48,37 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 }
 
 func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error) {
-	log.Debugf("GetParameterValue(%v, %v)", name, decrypt)
 	param, err := p.Service.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(name),
 		WithDecryption: aws.Bool(decrypt),
 	})
 
 	if err != nil {
-		log.Debug("Failed to get value. Returning ''")
+		log.Errorf("Failed to GetParameterValue: %s", err)
 		return "", err
 	}
 
 	return *param.Parameter.Value, nil
+}
+
+func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[string]string, error) {
+	// ppath is something like /path/to/env
+	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
+		Path:           aws.String(ppath),
+		Recursive:      aws.Bool(true),
+		WithDecryption: aws.Bool(decrypt),
+	})
+
+	if err != nil {
+		log.Errorf("Failed to GetParameterDataByPath: %s", err)
+		return nil, err
+	}
+
+	results := make(map[string]string)
+	// '/path/to/env/foo' -> 'foo': *pa.Value
+	for _, pa := range params.Parameters {
+		_, basename := path.Split(*pa.Name)
+		results[basename] = *pa.Value
+	}
+	return results, nil
 }

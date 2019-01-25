@@ -16,12 +16,14 @@
 package provider
 
 import (
+	"errors"
 	//log "github.com/sirupsen/logrus"
 	"github.com/cmattoon/aws-ssm/pkg/config"
 )
 
 type Provider interface {
 	GetParameterValue(string, bool) (string, error)
+	GetParameterDataByPath(string, bool) (map[string]string, error)
 }
 
 func NewProvider(cfg *config.Config) (Provider, error) {
@@ -29,15 +31,25 @@ func NewProvider(cfg *config.Config) (Provider, error) {
 	return p, err
 }
 
+// Mock an error with {"(error)", "error message"}
 type MockProvider struct {
-	Value          string
-	DecryptedValue string
+	Value             string
+	DecryptedValue    string
+	DirectoryContents map[string]string
 }
 
 func (mp MockProvider) GetParameterValue(s string, b bool) (string, error) {
+	if mp.Value == "(error)" {
+		return "", errors.New(mp.DecryptedValue)
+	}
+
 	if b {
 		// Decrypt flag
 		return mp.DecryptedValue, nil
 	}
 	return mp.Value, nil
+}
+
+func (mp MockProvider) GetParameterDataByPath(s string, b bool) (map[string]string, error) {
+	return mp.DirectoryContents, nil
 }

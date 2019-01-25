@@ -21,7 +21,7 @@ import (
 
 	"github.com/cmattoon/aws-ssm/pkg/provider"
 	"github.com/stretchr/testify/assert"
-	//"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -137,10 +137,8 @@ func TestSet(t *testing.T) {
 		ParamValue: "key1=val1,key2=val2,key3=val3,key4=val4=true",
 		Data:       map[string]string{},
 	}
-	s.Set("foo", "bar")
-	if s.Secret.StringData["foo"] != "bar" {
-		t.Fail()
-	}
+	require.NoError(t, s.Set("foo", "bar"))
+	assert.Equal(t, s.Secret.StringData["foo"], "bar")
 }
 
 func TestSetRefusesToOverwriteKey(t *testing.T) {
@@ -151,48 +149,58 @@ func TestSetRefusesToOverwriteKey(t *testing.T) {
 		ParamType:  "StringList",
 		ParamKey:   "foo-param",
 		ParamValue: "key1=val1,key2=val2,key3=val3,key4=val4=true",
-		Data:       map[string]string{},
+		Data: map[string]string{
+			"foo": "bar",
+		},
 	}
-	err := s.Set("foo", "bar")
-	if err != nil {
-		t.Fail()
-	}
-	err = s.Set("foo", "baz")
-	if err != nil {
-		t.Fail()
-	}
-	if s.Secret.StringData["foo"] != "baz" {
-		t.Fail()
-	}
+	require.Error(t, s.Set("foo", "baz"))
+
+	assert.Equal(t, "bar", s.Data["foo"])
+	// "foo=bar" was specified initially, not via Set
+	// so strictly speaking, it shouldn't be set here yet
+	// (because s.Set() should fail)
+	assert.Equal(t, "", s.Secret.StringData["foo"])
 }
 
 func TestSetsValue(t *testing.T) {
-	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError"}
+	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError", make(map[string]string)}
 	s := v1.Secret{}
 	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "")
-	if err != nil {
-		t.Fail()
-	}
-	if testSecret.ParamValue != "FooBar123" {
-		t.Fail()
-	}
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, testSecret.ParamValue, "FooBar123")
 }
 
 // When the encryption key is defined, the decrypted value should be returned
 func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{}
 	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key")
-	if err != nil {
-		t.Fail()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, testSecret.ParamValue, p.DecryptedValue)
+}
+
+func TestNewSecretHandlesStringList(t *testing.T) {
+	p := provider.MockProvider{"$@#*$(@)*$", "key1=val1,key2=val2,key3=val3", make(map[string]string)}
+	s := v1.Secret{}
+	ts, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "StringList", "my/test/key")
+	assert.True(t, err == nil)
+	exp := map[string]string{
+		"key1": "val1",
+		"key2": "val2",
+		"key3": "val3",
 	}
-	if testSecret.ParamValue != p.DecryptedValue {
-		t.Fail()
+
+	for k, v := range exp {
+		v3, ok := ts.Secret.StringData[k]
+		assert.Equal(t, ok, true)
+		assert.Equal(t, v, v3)
 	}
+
 }
 
 func TestFromKubernetesSecretReturnsErrorIfIrrelevant(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{} // No annotations, so no params
 
 	_, err := FromKubernetesSecret(p, s)
@@ -204,7 +212,7 @@ func TestFromKubernetesSecretReturnsErrorIfIrrelevant(t *testing.T) {
 // If the parameter is of Type=SecureString, and no key is supplied,
 // attempt to use the default key.
 func TestFromKubernetesSecretUsesDefaultEncryptionKey(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 
 	s := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -223,7 +231,7 @@ func TestFromKubernetesSecretUsesDefaultEncryptionKey(t *testing.T) {
 }
 
 func TestFromKubernetesSecretUsesSpecifiedEncryptionKey(t *testing.T) {
-	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123"}
+	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 
 	s := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -239,5 +247,18 @@ func TestFromKubernetesSecretUsesSpecifiedEncryptionKey(t *testing.T) {
 
 	if err != nil || ks.ParamKey != "foo/bar/baz" || ks.ParamValue != "FooBar123" {
 		t.Fail()
+	}
+}
+
+func TestSafeKeyName(t *testing.T) {
+	keys := map[string]string{
+		"/foo/bar":     "foo_bar",
+		"/foo/bar/":    "foo_bar",
+		"//foo/bar":    "_foo_bar",
+		"//foo/bar/":   "_foo_bar",
+		"/foo/bar/baz": "foo_bar_baz",
+	}
+	for path, exp := range keys {
+		assert.Equal(t, safeKeyName(path), exp)
 	}
 }
