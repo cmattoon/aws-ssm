@@ -1,5 +1,11 @@
 	Changelog
 	=========
+	[0.1.5] - 2019-01-25
+	--------------------
+	### Fixed
+	- Issue #9 - Now supports `SSM.GetParametersByPath`. Naming secrets like paths will allow storing multiple values per Secret.
+	- Issue #14 - Changed `log.Fatalf` to `log.Errorf` when there's a permission error on `GetParameter`. The restricted value
+	will simply be skipped instead of the Pod entering a crashloop.
 
 	[0.1.4] - 2018-09-11
 	--------------------
