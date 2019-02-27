@@ -34,7 +34,8 @@ build:
 
 .PHONY: container
 container:
-	docker build -t $(CURRENT_IMAGE) $(DOCKERFILE_DIR) -f $(DOCKERFILE)
+	docker build \
+		-t $(CURRENT_IMAGE) $(DOCKERFILE_DIR) -f $(DOCKERFILE)
 	docker tag $(CURRENT_IMAGE) $(LATEST_IMAGE)
 
 .PHONY: chart

@@ -10,6 +10,8 @@ RUN go get -d -v ./...
 
 RUN go install -v ./...
 
+RUN go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
+
 ## Stage 2
 FROM library/alpine
 LABEL org.label-schema.schema-version = "1.0.0"
@@ -30,6 +32,7 @@ ENV KUBE_CONFIG    ""
 
 RUN apk add --update ca-certificates
 
+COPY --from=0 /go/bin/aws-iam-authenticator /bin/aws-iam-authenticator
 COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
 
 CMD ["aws-ssm"]
