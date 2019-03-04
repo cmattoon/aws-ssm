@@ -17,24 +17,32 @@ DOCKERFILE_DIR     = .
 DOCKERFILE         = Dockerfile
 
 # Output file
-AWS_SSM_EXE        = build/aws-ssm
+AWS_SSM_EXE        = build/aws-ssm-$(IMAGE_TAG)
 
 CHART_DIR         ?= $(IMAGE_NAME)
 RBAC_ENABLED      ?= true
 HOST_SSL_DIR      ?= ""
 EXTRA_ARGS        ?= 
 
+BUILD_FLAGS       ?= -v
+LDFLAGS           ?= -X github.com/cmattoon/aws-ssm/pkg/config.Version=$(IMAGE_TAG) -w -s
+
 .PHONY: test
 test:
 	./scripts/go_test.sh
 
-.PHONY: build
-build:
-	go build -o $(AWS_SSM_EXE)
+build: $(AWS_SSM_EXE)
+$(AWS_SSM_EXE):
+	go build -o $(AWS_SSM_EXE) $(BUILD_FLAGS) -ldflags "$(LDFLAGS)"
+
+.PHONY: clean
+clean:
+	rm build/*
 
 .PHONY: container
 container:
 	docker build \
+		--build-arg TAG_VERSION=$(IMAGE_TAG) \
 		-t $(CURRENT_IMAGE) $(DOCKERFILE_DIR) -f $(DOCKERFILE)
 	docker tag $(CURRENT_IMAGE) $(LATEST_IMAGE)
 

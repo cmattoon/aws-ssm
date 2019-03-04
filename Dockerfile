@@ -14,8 +14,11 @@ RUN go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-au
 
 ## Stage 2
 FROM library/alpine
+
+ARG TAG_VERSION
+
 LABEL org.label-schema.schema-version = "1.0.0"
-LABEL org.label-schema.version = "0.1.5"
+LABEL org.label-schema.version = "$TAG_VERSION"
 LABEL org.label-schema.name = "aws-ssm"
 LABEL org.label-schema.description = "Updates Kubernetes Secrets with AWS SSM Parameters"
 LABEL org.label-schema.vendor = "com.cmattoon"

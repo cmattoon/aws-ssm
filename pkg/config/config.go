@@ -20,6 +20,8 @@ import (
 	"os"
 )
 
+var Version = "undefined"
+
 func getenv(key string, default_value string) string {
 	value := os.Getenv(key)
 	if len(value) == 0 {

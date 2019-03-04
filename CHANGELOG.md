@@ -1,5 +1,10 @@
 	Changelog
 	=========
+	[0.1.6] - 2019-03-04
+	--------------------
+	### Added
+	- aws-iam-authenticator for AWS EKS Support [Issue #16]
+
 	[0.1.5] - 2019-01-25
 	--------------------
 	### Fixed
