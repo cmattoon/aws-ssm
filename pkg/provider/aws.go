@@ -20,7 +20,9 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -40,6 +42,15 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
+
+	// Create the credentials from AssumeRoleProvider to assume the role
+	// referenced by the "myRoleARN" ARN.
+	// TODO(salma.suliman): replace "myRoleARN" with proper value.
+	creds := stscreds.NewCredentials(sess, "myRoleArn")
+
+	// Create service client value configured for credentials
+	// from assumed role.
+	svc := s3.New(sess, &aws.Config{Credentials: creds})
 
 	return AWSProvider{
 		Session: sess,
