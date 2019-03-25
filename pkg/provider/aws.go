@@ -19,7 +19,6 @@ import (
 	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
@@ -32,13 +31,14 @@ type AWSProvider struct {
 }
 
 func NewAWSProvider(cfg *config.Config) (Provider, error) {
+	log.Info("*******************")
+
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(cfg.AWSRegion),
-		Credentials: credentials.NewEnvCredentials(),
+		Region: aws.String(cfg.AWSRegion),
 	})
 
 	if err != nil {
-		log.Fatalf("%s", err)
+		log.Fatalf("*** %s", err)
 	}
 
 	return AWSProvider{
@@ -54,7 +54,7 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 	})
 
 	if err != nil {
-		log.Errorf("Failed to GetParameterValue: %s", err)
+		log.Errorf("*** Failed to GetParameterValue: %s", err)
 		return "", err
 	}
 
@@ -70,7 +70,7 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 	})
 
 	if err != nil {
-		log.Errorf("Failed to GetParameterDataByPath: %s", err)
+		log.Errorf("*** GetParameterDataByPath: %s", err)
 		return nil, err
 	}
 
