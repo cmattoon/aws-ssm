@@ -7,11 +7,13 @@
  {{ .Chart.Version }}
 ===============================================
 
- Release         : {{ .Release.Namespace }}/{{ .Release.Name }}
- AWS Region      : {{ .Values.aws.region }}
- Master URL      : {{ .Values.master_url }}
- Docker Image    : {{ .Values.image.name }}:{{ .Values.image.tag }}
- RBAC Enabled    : {{ .Values.rbac.enabled }}
-
+ Release           : {{ .Release.Namespace }}/{{ .Release.Name }}
+ Docker Image      : {{ .Values.image.name }}:{{ .Values.image.tag }}
+ AWS Region        : {{ .Values.aws.region }}
+ Master URL        : {{ .Values.master_url }}
+ RBAC Enabled      : {{ .Values.rbac.enabled }}
+{{ if or (.Values.ssl.mount_host) (ne .Values.host_ssl_dir "") }}
+ Mounted SSL Certs : {{ .Values.ssl.host_path }}:{{ .Values.ssl.mount_path }}
+{{ end }}
  List Pods:
      kubectl -n {{ .Release.Namespace }} get pods

@@ -2,8 +2,8 @@
 
 .PHONY:
 AWS_REGION        ?= us-west-2
-AWS_ACCESS_KEY    ?= none
-AWS_SECRET_KEY    ?= none
+AWS_ACCESS_KEY    ?= 
+AWS_SECRET_KEY    ?= 
 
 RELEASE_NAME      ?= aws-ssm
 RELEASE_NAMESPACE ?= kube-system
@@ -66,7 +66,6 @@ container:
 		--label org.label-schema.vcs-url="$(GIT_URL)" \
 		--label org.label-schema.vcs-ref="$(COMMIT)" \
 		--label org.label-schema.version="$(COMMIT)" \
-		--label org.label-schema.name="$(PROJECT_NAME)" \
 		-t $(CURRENT_IMAGE) $(DOCKERFILE_DIR) -f $(DOCKERFILE)
 	docker tag $(CURRENT_IMAGE) $(LATEST_IMAGE)
 
@@ -90,7 +89,7 @@ install:
 	 	--set aws.access_key=$(AWS_ACCESS_KEY) \
 	 	--set aws.secret_key=$(AWS_SECRET_KEY) \
 		--set rbac.enabled=$(RBAC_ENABLED) \
-		--set host_ssl_dir=$(HOST_SSL_DIR) \
+		--set ssl.mount_host=false \
 	 	$(EXTRA_ARGS) $(CHART_DIR)
 
 .PHONY: purge

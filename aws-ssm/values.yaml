@@ -1,23 +1,37 @@
-# AWS Region
+## AWS Settings
 aws:
+  # AWS Region ('us-west-2')
   region: ""
+  # AWS_SECRET_ACCESS_KEY_ID
   access_key: ""
+  # AWS_SECRET_ACCESS_KEY
   secret_key: ""
-# If != "", mounts /etc/ssl/certs in the container from {{ host_ssl_dir }}
-host_ssl_dir: ""
-# URL to Kubernetes master API
-master_url: ""
-# Healthcheck stuff
-metrics_port: 9999
-# Number of replicas
-replicas: 1
-# Docker image for aws-ssm
+
+# Docker Image to use
 image:
   name: cmattoon/aws-ssm
   tag: v0.1.6
-# Pod Resources
-resources: {}
-  
+
+## RBAC
 rbac:
   enabled: true
-  
+
+# Deprecated: host_ssl_dir. Use ssl.mount_host (below)
+host_ssl_dir: ""
+
+## SSL Certs
+ssl:
+  # If ssl.mount_host is true, SSL certs will be mounted from a hostVolume
+  mount_host: false
+  mount_path: /etc/ssl/certs
+  host_path: /etc/ssl/certs
+
+## Kubernetes Master API URL
+master_url: ""
+
+# Healthcheck port
+metrics_port: 9999
+
+# Pod Resources
+replicas: 1 # Probably don't change this
+resources: {}
