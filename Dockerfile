@@ -1,3 +1,6 @@
+###
+## Stage I - Build aws-ssm binary, install aws-iam-authenticator
+#
 FROM library/golang:1.10-alpine
 
 RUN apk add --update --no-cache git
@@ -12,17 +15,10 @@ RUN go install -v ./...
 
 RUN go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
 
-## Stage 2
-FROM library/alpine
-
-ARG TAG_VERSION
-
-LABEL org.label-schema.schema-version = "1.0.0"
-LABEL org.label-schema.version = "$TAG_VERSION"
-LABEL org.label-schema.name = "aws-ssm"
-LABEL org.label-schema.description = "Updates Kubernetes Secrets with AWS SSM Parameters"
-LABEL org.label-schema.vendor = "com.cmattoon"
-LABEL org.label-schema.vcs-url = "https://github.com/cmattoon/aws-ssm"
+###
+## Stage II - Add ca-certificates, binaries
+#
+FROM library/alpine:3.7
 
 ENV AWS_REGION     ""
 ENV AWS_ACCESS_KEY ""
@@ -38,4 +34,4 @@ RUN apk add --update ca-certificates
 COPY --from=0 /go/bin/aws-iam-authenticator /bin/aws-iam-authenticator
 COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
 
-CMD ["aws-ssm"]
+ENTRYPOINT ["/bin/aws-ssm"]

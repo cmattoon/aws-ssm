@@ -5,11 +5,16 @@ metadata:
   name: {{ template "ssm.fullname" . }}
   labels:
     app: {{ template "ssm.name" . }}
+    app.kubernetes.io/name: {{ template "ssm.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -42,15 +47,20 @@ spec:
             httpGet:
               path: /healthz
               port: {{ .Values.metrics_port }}
+          {{ if and (ne .Values.aws.secret_key "") (ne .Values.aws.access_key "") -}}
           envFrom:
               - secretRef:
-                  name: aws-ssm-credentials 
+                  name: aws-ssm-credentials
+          {{ end -}}
           env:
             - name: METRICS_URL
               value: 0.0.0.0:{{ .Values.metrics_port }}
+
+            - name: AWS_REGION
+              value: "{{ .Values.aws.region }}"
           {{ if ne .Values.host_ssl_dir "" -}}
           volumeMounts:
-            - mountPath: /etc/ssl/certs
+            - mountPath: {{ .Values.ssl.mount_path }}
               name: aws-host-ca-certificates
           {{ end -}}
           resources:
@@ -59,9 +69,9 @@ spec:
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       {{- end }}
-      {{ if ne .Values.host_ssl_dir "" -}}
+      {{ if or ( ne .Values.host_ssl_dir "") (.Values.ssl.mount_host) -}}
       volumes:
         - name: aws-host-ca-certificates
           hostPath:
-            path: /etc/ssl/certs
+            path: {{ .Values.ssl.host_path }}
       {{- end }}
