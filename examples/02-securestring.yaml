@@ -1,0 +1,12 @@
+---
+# aws ssm put-parameter --name SUPER_SECRET_KEY --type SecureString --value FooBar [--key-id=<Non-Default AWS KMS Key>]
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-app-secrets
+  annotations:
+    aws-ssm/aws-param-name: SUPER_SECRET_KEY
+    aws-ssm/aws-param-type: SecureString
+    # aws-ssm/aws-param-key: alias/aws/ssm
+data: {}
+#  SecureString: Rm9vQmFy

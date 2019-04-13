@@ -28,7 +28,12 @@ AWS_SSM_EXE        = build/aws-ssm-$(DOCKER_TAG)
 
 CHART_DIR         ?= $(DOCKER_IMAGE)
 RBAC_ENABLED      ?= true
-HOST_SSL_DIR      ?= ""
+HOST_SSL_DIR      ?= 
+ifeq ($(HOST_SSL_DIR),)
+MOUNT_SSL=false
+else
+MOUNT_SSL=true
+endif
 EXTRA_ARGS        ?= 
 
 BUILD_DATE        ?= $(shell date +"%Y-%m-%dT%H:%M:%S")
@@ -74,9 +79,9 @@ chart: ## Lint chart
 chart: 
 	helm lint aws-ssm
 
-.PHONY: push-container
-push-container: ## Docker push
-push-container: container
+.PHONY: push
+push: ## Docker push
+push:
 	docker push $(CURRENT_IMAGE)
 
 .PHONY: install
@@ -89,7 +94,8 @@ install:
 	 	--set aws.access_key=$(AWS_ACCESS_KEY) \
 	 	--set aws.secret_key=$(AWS_SECRET_KEY) \
 		--set rbac.enabled=$(RBAC_ENABLED) \
-		--set ssl.mount_host=false \
+		--set ssl.mount_host=$(MOUNT_SSL) \
+		--set ssl.host_path=$(HOST_SSL_DIR) \
 	 	$(EXTRA_ARGS) $(CHART_DIR)
 
 .PHONY: purge

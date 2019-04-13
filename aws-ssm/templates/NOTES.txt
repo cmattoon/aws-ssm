@@ -6,14 +6,28 @@
  /_/   \_\_/\_/  |____/     |____/____/|_|  | |
  {{ .Chart.Version }}
 ===============================================
+************************************************
+****    SSL Host Path Deprecation Warning   ****
+************************************************
+It looks like you {{ if ne .Values.host_ssl_dir "" }}are{{ else }}are NOT{{ end }} using "host_ssl_dir",
+which will be removed soon, in favor of:
+
+    --set ssl.mount_host=true
+    [--set ssl.host_path=/etc/ssl/certs]
+    [--set ssl.mount_path=/etc/ssl/certs]
+
+************************************************
 
  Release           : {{ .Release.Namespace }}/{{ .Release.Name }}
  Docker Image      : {{ .Values.image.name }}:{{ .Values.image.tag }}
- AWS Region        : {{ .Values.aws.region }}
+ AWS Region        : {{ if eq .Values.aws.region "" }}- NO REGION DEFINED -{{ else }}{{ .Values.aws.region }}{{ end }}
  Master URL        : {{ .Values.master_url }}
  RBAC Enabled      : {{ .Values.rbac.enabled }}
 {{ if or (.Values.ssl.mount_host) (ne .Values.host_ssl_dir "") }}
  Mounted SSL Certs : {{ .Values.ssl.host_path }}:{{ .Values.ssl.mount_path }}
 {{ end }}
+
  List Pods:
      kubectl -n {{ .Release.Namespace }} get pods
+
+

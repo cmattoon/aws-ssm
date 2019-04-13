@@ -85,11 +85,11 @@ A KUBE_CONFIG and MASTER_URL are only necessary when running outside of the clus
 | MASTER_URL  | -master-url  |                | The Kubernetes master API URL    |
 
 
-MVP Working (go binary)
------------------------
+Basic Usage
+-----------
 1. Create Parameter in AWS Parameter Store
 
-`my_value = foobar`
+`my-db-password` = `foobar`
 
 2. Create Kubernetes Secret with Annotations
 
@@ -99,10 +99,9 @@ kind: Secret
 metadata:
   name: my-secret
   annotations:
-    "alpha.ssm.cmattoon.com/k8s-secret-name": my-secret
-    "alpha.ssm.cmattoon.com/aws-param-name": my_value
-    "alpha.ssm.cmattoon.com/aws-param-type": SecureString
-    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+    aws-ssm/k8s-secret-name: my-secret
+    aws-ssm/aws-param-name: my-db-password
+    aws-ssm/aws-param-type: SecureString
 data: {}
 ```
 
@@ -110,36 +109,41 @@ data: {}
 
 4. A key with the name `$ParameterType` should have been added to your Secret
 
-
 ```
 apiVersion: v1
 kind: Secret
 metadata:
   name: my-secret
   annotations:
-    "alpha.ssm.cmattoon.com/k8s-secret-name": my-secret
-    "alpha.ssm.cmattoon.com/aws-param-name": my_value
-    "alpha.ssm.cmattoon.com/aws-param-type": SecureString
-    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+    aws-ssm/k8s-secret-name: my-secret
+    aws-ssm/aws-param-name: my-db-password
+    aws-ssm/aws-param-type: SecureString
 data:
-  SecureString: foobar
+  SecureString: Zm9vYmFyCg==
 ```
 
+Annotations
+-----------
 
-```
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  annotations:
-    "alpha.ssm.cmattoon.com/k8s-secret-name": app-secrets
-    "alpha.ssm.cmattoon.com/aws-param-name": /path/to/env
-    "alpha.ssm.cmattoon.com/aws-param-type": Directory
-    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
-data:
-  file1: value1
-  file2: value2
-```
+| Annotation                 | Description                                            | Default         |
+|----------------------------|--------------------------------------------------------|-----------------|
+| `aws-ssm/k8s-secret-name`  | The name of the Kubernetes Secret to modify.           | `<none>`        |
+| `aws-ssm/aws-param-name`   | The name of the AWS SSM Parameter. May be a path.      | `<none>`        |
+| `aws-ssm/aws-param-type`   | Determines how values are parsed, if at all.           | `String`        |
+| `aws-ssm/aws-param-key`    | Required if `aws-ssm/aws-param-type` is `SecureString` | `alias/aws/ssm` |
+
+
+### AWS Parameter Types
+
+Values for `aws-ssm/aws-param-type` are:
+
+| Value          | Behavior                 | AWS Value                   | K8S Value(s)                            |
+|----------------|--------------------------|-----------------------------|-----------------------------------------|
+| `String`       | No parsing is performed  | `foo` = `bar`               | `foo: bar`                              |
+| `SecureString` | Requires `aws-param-key` | `foo` = `bar`               | `foo: bar`                              |
+| `StringList`   | Splits CSV mapping       | `foo=bar,bar=baz,baz=bat`   | `foo: bar`<br> `bar: baz`<br>`baz: bat` |
+| `Directory`    | Get multiple values      | `/path/to/values`           | <treats each subkey/value as a String>  |
+
 
 
 Build

@@ -107,6 +107,7 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 	return s, nil
 }
 
+// FromKubernetesSecret returns an internal Secret struct, if the v1.Secret is properly annotated.
 func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error) {
 	param_name := ""
 	param_type := ""
@@ -115,10 +116,13 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	for k, v := range secret.ObjectMeta.Annotations {
 		switch k {
 		case anno.AWSParamName:
+		case anno.V1ParamName:
 			param_name = v
 		case anno.AWSParamType:
+		case anno.V1ParamType:
 			param_type = v
 		case anno.AWSParamKey:
+		case anno.V1ParamKey:
 			param_key = v
 		}
 	}

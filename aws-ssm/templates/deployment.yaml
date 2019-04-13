@@ -5,9 +5,14 @@ metadata:
   name: {{ template "ssm.fullname" . }}
   labels:
     app: {{ template "ssm.name" . }}
+    app.kubernetes.io/name: {{ template "ssm.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    heritage: {{ .Release.Service }}    
 spec:
   replicas: 1
   strategy:

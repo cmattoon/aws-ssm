@@ -1,0 +1,15 @@
+---
+# aws ssm put-parameter --name /dev/db/user --type String --value root
+# aws ssm put-parameter --name /dev/db/host --type String --value 10.0.1.10
+# aws ssm put-parameter --name /dev/db/pass --type String --value password123
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-directory-secret
+  annotations:
+    aws-ssm/aws-param-name: /dev/db
+    aws-ssm/aws-param-type: Directory
+data: {}
+#  host: MTAuMC4xLjEw
+#  pass: cGFzc3dvcmQxMjM=
+#  user: cm9vdA==

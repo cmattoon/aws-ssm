@@ -1,0 +1,15 @@
+---
+# aws ssm put-parameter --name my-param-list --type StringList --value "srv0=10.0.0.10,srv1=10.0.0.11,srv2=10.0.0.12"
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-param-list
+  annotations:
+    aws-ssm/aws-param-name: my-param-list
+    aws-ssm/aws-param-type: StringList
+data: {}
+#  StringList: c3J2MD0xMC4wLjAuMTAsc3J2MT0xMC4wLjAuMTEsc3J2Mj0xMC4wLjAuMTI=
+#  srv0: MTAuMC4wLjEw
+#  srv1: MTAuMC4wLjEx
+#  srv2: MTAuMC4wLjEy
+

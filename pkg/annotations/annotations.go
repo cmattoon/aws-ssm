@@ -21,4 +21,8 @@ const (
 	AWSParamName  = "alpha.ssm.cmattoon.com/aws-param-name"
 	AWSParamType  = "alpha.ssm.cmattoon.com/aws-param-type"
 	AWSParamKey   = "alpha.ssm.cmattoon.com/aws-param-key"
+
+	V1ParamName = "aws-ssm/aws-param-name"
+	V1ParamType = "aws-ssm/aws-param-type"
+	V1ParamKey  = "aws-ssm/aws-param-key"
 )
