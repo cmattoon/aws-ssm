@@ -2,6 +2,9 @@
 # aws ssm put-parameter --name /dev/db/user --type String --value root
 # aws ssm put-parameter --name /dev/db/host --type String --value 10.0.1.10
 # aws ssm put-parameter --name /dev/db/pass --type String --value password123
+# aws ssm put-parameter --name /dev/db/foo/bar --type String --value bar123
+# aws ssm put-parameter --name /dev/db/foo/baz --type String --value baz456
+# aws ssm put-parameter --name /dev/db/foo/bat --type String --value bat789
 apiVersion: v1
 kind: Secret
 metadata:
@@ -10,6 +13,9 @@ metadata:
     aws-ssm/aws-param-name: /dev/db
     aws-ssm/aws-param-type: Directory
 data: {}
+#  bar: YmFyMTIz
+#  bat: YmF0Nzg5
+#  baz: YmF6NDU2
 #  host: MTAuMC4xLjEw
 #  pass: cGFzc3dvcmQxMjM=
 #  user: cm9vdA==
