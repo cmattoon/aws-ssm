@@ -56,14 +56,6 @@ defaults should work as-is.
 | NO    | ssl.mount_path | /etc/ssl/certs   | <path>                      | The SSL certs dir in the container (dev)                         |
 
 
-Docker Container
-----------------
-
-### Build
-
-Run `make container` to build the Docker image
-
-
 Configuration
 -------------
 
@@ -144,8 +136,9 @@ Values for `aws-ssm/aws-param-type` are:
 Build
 -----
 
-    make
-    make container
+    make           # Build binary
+    make container # Build Docker image
+    make push      # Push Docker image
 
 
 CA Certificates
