@@ -10,7 +10,7 @@ aws:
 # Docker Image to use
 image:
   name: cmattoon/aws-ssm
-  tag: v0.1.6
+  tag: v0.1.7
 
 ## RBAC
 rbac:
