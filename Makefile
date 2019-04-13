@@ -2,8 +2,8 @@
 
 .PHONY:
 AWS_REGION        ?= us-west-2
-AWS_ACCESS_KEY    ?= 
-AWS_SECRET_KEY    ?= 
+AWS_ACCESS_KEY    ?=
+AWS_SECRET_KEY    ?=
 
 RELEASE_NAME      ?= aws-ssm
 RELEASE_NAMESPACE ?= kube-system
@@ -28,7 +28,7 @@ AWS_SSM_EXE        = build/aws-ssm-$(DOCKER_TAG)
 
 CHART_DIR         ?= $(DOCKER_IMAGE)
 RBAC_ENABLED      ?= true
-HOST_SSL_DIR      ?= 
+HOST_SSL_DIR      ?=
 ifeq ($(HOST_SSL_DIR),)
 MOUNT_SSL=false
 else
