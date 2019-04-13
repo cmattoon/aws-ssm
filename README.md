@@ -7,7 +7,6 @@ cmattoon/aws-ssm
 [![codecov](https://codecov.io/gh/cmattoon/aws-ssm/branch/master/graph/badge.svg)](https://codecov.io/gh/cmattoon/aws-ssm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cmattoon/aws-ssm)](https://goreportcard.com/report/github.com/cmattoon/aws-ssm)
 [![Maintainability](https://api.codeclimate.com/v1/badges/764dddb334f5dc9fb986/maintainability)](https://codeclimate.com/github/cmattoon/aws-ssm/maintainability)
-[![Anchore Image Overview](https://anchore.io/service/badges/image/7d144c4a4e096c3f87c563080ea1279aed19e718ccdf12a6b7436e086090d3b3)](https://anchore.io/image/dockerhub/cmattoon%2Faws-ssm%3Alatest)
 
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
@@ -36,11 +35,9 @@ First, export required variables, then run `make install`.
     export AWS_ACCESS_KEY=<access-key-id>
 
 
-### AWS User/Role
+### AWS Credentials
 
-The AWS credentials should be associated with an IAM user/role that has the following permissions:
-
-  - @todo
+Uses the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-go/api/aws/credentials/#NewChainCredentials)
   
 
 ### Values
@@ -54,7 +51,7 @@ defaults should work as-is.
 | YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
 | YES   | aws.access_key | ""               |                             |                                                                  |
 | YES   | aws.secret_key | ""               |                             |                                                                  |
-| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG | base64)`. Stored as a Secret |
+| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG \| base64)`. Stored as a Secret|
 | NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
 | NO    | replicas       | 1                | <int>                       | The number of Pods                                               |
 | NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
