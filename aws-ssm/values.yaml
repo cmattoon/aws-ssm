@@ -33,5 +33,4 @@ master_url: ""
 metrics_port: 9999
 
 # Pod Resources
-replicas: 1 # Probably don't change this
 resources: {}

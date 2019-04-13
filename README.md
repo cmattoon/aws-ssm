@@ -11,9 +11,6 @@ cmattoon/aws-ssm
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
 
- * For example usage, see `example.yaml`
- * Use the Helm chart to get up and running quickly
-
 Build Options
 -------------
 
@@ -29,10 +26,7 @@ Helm Chart
 
 First, export required variables, then run `make install`.
 
-
     export AWS_REGION=<region>
-    export AWS_SECRET_KEY=<secret>
-    export AWS_ACCESS_KEY=<access-key-id>
 
 
 ### AWS Credentials
@@ -49,16 +43,17 @@ defaults should work as-is.
 | Req'd | Value          | Default          | Example                     | Description                                                      |
 |-------|----------------|------------------|-----------------------------|------------------------------------------------------------------|
 | YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
-| YES   | aws.access_key | ""               |                             |                                                                  |
-| YES   | aws.secret_key | ""               |                             |                                                                  |
+| NO    | aws.access_key | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
+| NO    | aws.secret_key | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
 | NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG \| base64)`. Stored as a Secret|
 | NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
-| NO    | replicas       | 1                | <int>                       | The number of Pods                                               |
 | NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
 | NO    | image.tag      | latest           | <docker-tag>                | The Docker tag for the image                                     |
 | NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
-| NO    | host_ssl_dir   | ""               | /etc/ssl/certs              | If specified, mounts certs from the host.                        |
 | NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                      |
+| NO    | ssl.mount_host | false            | <bool>                      | Mounts {ssl.host_path} -> {ssl.mount_path} as hostVolume         |
+| NO    | ssl.host_path  | /etc/ssl/certs   | <path>                      | The SSL certs dir on the host                                    |
+| NO    | ssl.mount_path | /etc/ssl/certs   | <path>                      | The SSL certs dir in the container (dev)                         |
 
 
 Docker Container
