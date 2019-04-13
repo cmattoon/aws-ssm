@@ -115,14 +115,11 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 
 	for k, v := range secret.ObjectMeta.Annotations {
 		switch k {
-		case anno.AWSParamName:
-		case anno.V1ParamName:
+		case anno.AWSParamName, anno.V1ParamName:
 			param_name = v
-		case anno.AWSParamType:
-		case anno.V1ParamType:
+		case anno.AWSParamType, anno.V1ParamType:
 			param_type = v
-		case anno.AWSParamKey:
-		case anno.V1ParamKey:
+		case anno.AWSParamKey, anno.V1ParamKey:
 			param_key = v
 		}
 	}
