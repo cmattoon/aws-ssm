@@ -5,12 +5,24 @@ kind: ServiceAccount
 metadata:
   name: {{ template "ssm.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ template "ssm.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ template "ssm.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ template "ssm.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 rules:
   - apiGroups:
       - ""
@@ -36,6 +48,12 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "ssm.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ template "ssm.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}  
 subjects:
   - name: {{ template "ssm.fullname" . }}
     namespace: {{ .Release.Namespace }}
@@ -43,4 +61,5 @@ subjects:
 roleRef:
   name: {{ template "ssm.fullname" . }}
   kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
 {{- end }}
