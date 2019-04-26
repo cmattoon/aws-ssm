@@ -6,11 +6,7 @@ WORKDIR /go/src/github.com/cmattoon/aws-ssm
 
 COPY . .
 
-RUN go get -d -v ./...
-
-RUN go install -v ./...
-
-RUN go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/aws-ssm .
 
 ## Stage 2
 FROM library/alpine
@@ -35,7 +31,6 @@ ENV KUBE_CONFIG    ""
 
 RUN apk add --update ca-certificates
 
-COPY --from=0 /go/bin/aws-iam-authenticator /bin/aws-iam-authenticator
 COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
 
 CMD ["aws-ssm"]
