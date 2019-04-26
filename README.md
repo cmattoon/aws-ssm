@@ -7,13 +7,9 @@ cmattoon/aws-ssm
 [![codecov](https://codecov.io/gh/cmattoon/aws-ssm/branch/master/graph/badge.svg)](https://codecov.io/gh/cmattoon/aws-ssm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cmattoon/aws-ssm)](https://goreportcard.com/report/github.com/cmattoon/aws-ssm)
 [![Maintainability](https://api.codeclimate.com/v1/badges/764dddb334f5dc9fb986/maintainability)](https://codeclimate.com/github/cmattoon/aws-ssm/maintainability)
-[![Anchore Image Overview](https://anchore.io/service/badges/image/7d144c4a4e096c3f87c563080ea1279aed19e718ccdf12a6b7436e086090d3b3)](https://anchore.io/image/dockerhub/cmattoon%2Faws-ssm%3Alatest)
 
 
 Updates Kubernetes `Secrets` with values from AWS Parameter Store
-
- * For example usage, see `example.yaml`
- * Use the Helm chart to get up and running quickly
 
 Build Options
 -------------
@@ -30,17 +26,12 @@ Helm Chart
 
 First, export required variables, then run `make install`.
 
-
     export AWS_REGION=<region>
-    export AWS_SECRET_KEY=<secret>
-    export AWS_ACCESS_KEY=<access-key-id>
 
 
-### AWS User/Role
+### AWS Credentials
 
-The AWS credentials should be associated with an IAM user/role that has the following permissions:
-
-  - @todo
+Uses the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-go/api/aws/credentials/#NewChainCredentials)
   
 
 ### Values
@@ -52,24 +43,17 @@ defaults should work as-is.
 | Req'd | Value          | Default          | Example                     | Description                                                      |
 |-------|----------------|------------------|-----------------------------|------------------------------------------------------------------|
 | YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
-| YES   | aws.access_key | ""               |                             |                                                                  |
-| YES   | aws.secret_key | ""               |                             |                                                                  |
-| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG | base64)`. Stored as a Secret |
+| NO    | aws.access_key | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
+| NO    | aws.secret_key | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
+| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG \| base64)`. Stored as a Secret|
 | NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
-| NO    | replicas       | 1                | <int>                       | The number of Pods                                               |
 | NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
 | NO    | image.tag      | latest           | <docker-tag>                | The Docker tag for the image                                     |
 | NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
-| NO    | host_ssl_dir   | ""               | /etc/ssl/certs              | If specified, mounts certs from the host.                        |
 | NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                      |
-
-
-Docker Container
-----------------
-
-### Build
-
-Run `make container` to build the Docker image
+| NO    | ssl.mount_host | false            | <bool>                      | Mounts {ssl.host_path} -> {ssl.mount_path} as hostVolume         |
+| NO    | ssl.host_path  | /etc/ssl/certs   | <path>                      | The SSL certs dir on the host                                    |
+| NO    | ssl.mount_path | /etc/ssl/certs   | <path>                      | The SSL certs dir in the container (dev)                         |
 
 
 Configuration
@@ -88,11 +72,11 @@ A KUBE_CONFIG and MASTER_URL are only necessary when running outside of the clus
 | MASTER_URL  | -master-url  |                | The Kubernetes master API URL    |
 
 
-MVP Working (go binary)
------------------------
+Basic Usage
+-----------
 1. Create Parameter in AWS Parameter Store
 
-`my_value = foobar`
+`my-db-password` = `foobar`
 
 2. Create Kubernetes Secret with Annotations
 
@@ -102,10 +86,9 @@ kind: Secret
 metadata:
   name: my-secret
   annotations:
-    "alpha.ssm.cmattoon.com/k8s-secret-name": my-secret
-    "alpha.ssm.cmattoon.com/aws-param-name": my_value
-    "alpha.ssm.cmattoon.com/aws-param-type": SecureString
-    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+    aws-ssm/k8s-secret-name: my-secret
+    aws-ssm/aws-param-name: my-db-password
+    aws-ssm/aws-param-type: SecureString
 data: {}
 ```
 
@@ -113,43 +96,49 @@ data: {}
 
 4. A key with the name `$ParameterType` should have been added to your Secret
 
-
 ```
 apiVersion: v1
 kind: Secret
 metadata:
   name: my-secret
   annotations:
-    "alpha.ssm.cmattoon.com/k8s-secret-name": my-secret
-    "alpha.ssm.cmattoon.com/aws-param-name": my_value
-    "alpha.ssm.cmattoon.com/aws-param-type": SecureString
-    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
+    aws-ssm/k8s-secret-name: my-secret
+    aws-ssm/aws-param-name: my-db-password
+    aws-ssm/aws-param-type: SecureString
 data:
-  SecureString: foobar
+  SecureString: Zm9vYmFyCg==
 ```
 
+Annotations
+-----------
 
-```
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-secret
-  annotations:
-    "alpha.ssm.cmattoon.com/k8s-secret-name": app-secrets
-    "alpha.ssm.cmattoon.com/aws-param-name": /path/to/env
-    "alpha.ssm.cmattoon.com/aws-param-type": Directory
-    "alpha.ssm.cmattoon.com/aws-param-key": "alias/aws/ssm"
-data:
-  file1: value1
-  file2: value2
-```
+| Annotation                 | Description                                            | Default         |
+|----------------------------|--------------------------------------------------------|-----------------|
+| `aws-ssm/k8s-secret-name`  | The name of the Kubernetes Secret to modify.           | `<none>`        |
+| `aws-ssm/aws-param-name`   | The name of the AWS SSM Parameter. May be a path.      | `<none>`        |
+| `aws-ssm/aws-param-type`   | Determines how values are parsed, if at all.           | `String`        |
+| `aws-ssm/aws-param-key`    | Required if `aws-ssm/aws-param-type` is `SecureString` | `alias/aws/ssm` |
+
+
+### AWS Parameter Types
+
+Values for `aws-ssm/aws-param-type` are:
+
+| Value          | Behavior                 | AWS Value                   | K8S Value(s)                            |
+|----------------|--------------------------|-----------------------------|-----------------------------------------|
+| `String`       | No parsing is performed  | `foo` = `bar`               | `foo: bar`                              |
+| `SecureString` | Requires `aws-param-key` | `foo` = `bar`               | `foo: bar`                              |
+| `StringList`   | Splits CSV mapping       | `foo=bar,bar=baz,baz=bat`   | `foo: bar`<br> `bar: baz`<br>`baz: bat` |
+| `Directory`    | Get multiple values      | `/path/to/values`           | <treats each subkey/value as a String>  |
+
 
 
 Build
 -----
 
-    make
-    make container
+    make           # Build binary
+    make container # Build Docker image
+    make push      # Push Docker image
 
 
 CA Certificates

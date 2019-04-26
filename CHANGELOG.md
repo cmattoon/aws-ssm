@@ -1,9 +1,28 @@
 	Changelog
 	=========
+
+	[0.1.7] - 2019-04-13
+	--------------------
+	### Changed
+	- SSL Mount paths are now configurable
+	- 'make push-container' -> 'make push'
+
+	### Added
+	- Shorter annotations
+	- Lots of metadata/labels
+	- Proper examples
+
+	### Fixed
+	- Made alpine version explicit in Dockerfile (alpine:3.7)
+	- Makefile cleanup
+
+	### Removed
+	- Default values for AWS_SECRET_KEY, AWS_ACCESS_KEY
+
 	[0.1.6] - 2019-03-04
 	--------------------
 	### Added
-	- aws-iam-authenticator for AWS EKS Support [Issue #16]
+	- aws-iam-authenticator for AWS EKS Support [Issue #16] (@SalmaCodes)
 
 	[0.1.5] - 2019-01-25
 	--------------------
@@ -11,11 +30,12 @@
 	- Issue #9 - Now supports `SSM.GetParametersByPath`. Naming secrets like paths will allow storing multiple values per Secret.
 	- Issue #14 - Changed `log.Fatalf` to `log.Errorf` when there's a permission error on `GetParameter`. The restricted value
 	will simply be skipped instead of the Pod entering a crashloop.
+	- AWS Environment vars now stored in a Secret (@signaleleven)
 
 	[0.1.4] - 2018-09-11
 	--------------------
 	### Fixed
-	- Add ca-certificates package to final alpine image [Issue #7]
+	- Add ca-certificates package to final alpine image [Issue #7] (@cmosetick)
 	- Add Volume (Type=hostPath) for /etc/ssl/certs, to ensure AWS roots are available [Issue #7]
 
 	[0.1.3] - 2018-07-24

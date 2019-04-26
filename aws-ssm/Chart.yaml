@@ -2,4 +2,16 @@
 apiVersion: v1
 description: Dynamic secret management for Kubernetes
 name: aws-ssm
-version: 0.1.6
+version: 0.1.7
+appVersion: 0.1.7
+keywords:
+  - aws
+  - secret
+sources:
+  - https://github.com:cmattoon/aws-ssm.git
+maintainers:
+  - name: Curtis Mattoon
+    email: cmattoon@cmattoon.com
+    url: https://github.com/cmattoon
+engine: gotpl
+

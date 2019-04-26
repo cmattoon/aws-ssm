@@ -1,0 +1,11 @@
+---
+# aws ssm put-parameter --name my-password --type String --value FooBar
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-singlevalue-secret
+  annotations:
+    aws-ssm/aws-param-name: my-password
+    aws-ssm/aws-param-type: String
+data: {}
+#  String: Rm9vQmFy
