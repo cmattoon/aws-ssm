@@ -24,6 +24,7 @@ import (
 type Provider interface {
 	GetParameterValue(string, bool) (string, error)
 	GetParameterDataByPath(string, bool) (map[string]string, error)
+	AssumeRole(roleName string) error
 }
 
 func NewProvider(cfg *config.Config) (Provider, error) {
@@ -53,3 +54,5 @@ func (mp MockProvider) GetParameterValue(s string, b bool) (string, error) {
 func (mp MockProvider) GetParameterDataByPath(s string, b bool) (map[string]string, error) {
 	return mp.DirectoryContents, nil
 }
+
+// TODO(salma): add mock AssumeRole?
