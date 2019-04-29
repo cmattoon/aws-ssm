@@ -19,7 +19,10 @@ import (
 	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -79,4 +82,33 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 		results[basename] = *pa.Value
 	}
 	return results, nil
+}
+
+func (p AWSProvider) AssumeRole(roleName string) error {
+	log.Info("ENTER AssumeRole: roleName = %s", roleName)
+
+	iamSvc := iam.New(p.Session)
+
+	role, err := iamSvc.GetRole(&iam.GetRoleInput{
+		RoleName: aws.String(roleName),
+	})
+
+	if err != nil {
+		log.Errorf("Failed to GetRole: %s", err)
+		return err
+	}
+
+	roleArn := role.Role.Arn
+
+	// Create the credentials from AssumeRoleProvider to assume the role
+	// referenced by roleArn.
+	creds := stscreds.NewCredentials(p.Session, roleArn)
+
+	// Create service client value configured for credentials
+	// from assumed role.
+	svc := s3.New(p.Session, &aws.Config{Credentials: creds})
+
+	log.Info("EXIT AssumeRole: roleARN = %s", roleArn)
+
+	return nil
 }

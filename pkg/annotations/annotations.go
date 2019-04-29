@@ -25,4 +25,5 @@ const (
 	V1ParamName = "aws-ssm/aws-param-name"
 	V1ParamType = "aws-ssm/aws-param-type"
 	V1ParamKey  = "aws-ssm/aws-param-key"
+	// TODO(salma.suliman): Add iam role annotation here
 )

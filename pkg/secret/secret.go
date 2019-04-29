@@ -24,7 +24,7 @@ import (
 
 	anno "github.com/cmattoon/aws-ssm/pkg/annotations"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -112,6 +112,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	param_name := ""
 	param_type := ""
 	param_key := ""
+	role := ""
 
 	for k, v := range secret.ObjectMeta.Annotations {
 		switch k {
@@ -121,6 +122,8 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 			param_type = v
 		case anno.AWSParamKey, anno.V1ParamKey:
 			param_key = v
+		case "iam.amazonaws.com/role":
+			role = v
 		}
 	}
 
@@ -133,6 +136,11 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 			log.Info("No KMS key defined. Using default key 'alias/aws/ssm'")
 			param_key = "alias/aws/ssm"
 		}
+	}
+
+	log.Info("FromKubernetesSecret: ROLE: %s", role)
+	if role != "" {
+		p.AssumeRole(role)
 	}
 
 	s, err := NewSecret(
@@ -190,7 +198,7 @@ func (s *Secret) Set(key string, val string) (err error) {
 }
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
-	log.Info("Updating Kubernetes Secret...")
+	log.Info("*** Updating Kubernetes Secret...")
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
 
