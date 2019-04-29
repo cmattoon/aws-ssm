@@ -22,7 +22,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -102,11 +101,10 @@ func (p AWSProvider) AssumeRole(roleName string) error {
 
 	// Create the credentials from AssumeRoleProvider to assume the role
 	// referenced by roleArn.
-	creds := stscreds.NewCredentials(p.Session, roleArn)
+	creds := stscreds.NewCredentials(p.Session, *roleArn)
+	_ = creds
 
-	// Create service client value configured for credentials
-	// from assumed role.
-	svc := s3.New(p.Session, &aws.Config{Credentials: creds})
+	// TODO(salma): do we need to update the session/service?
 
 	log.Info("EXIT AssumeRole: roleARN = %s", roleArn)
 
