@@ -138,7 +138,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		}
 	}
 
-	log.Info("FromKubernetesSecret: ROLE: %s", role)
+	log.Info("FromKubernetesSecret: ROLE: ", role)
 	if role != "" {
 		p.AssumeRole(role)
 	}

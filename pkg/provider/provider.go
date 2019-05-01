@@ -24,7 +24,7 @@ import (
 type Provider interface {
 	GetParameterValue(string, bool) (string, error)
 	GetParameterDataByPath(string, bool) (map[string]string, error)
-	AssumeRole(roleName string) error
+	AssumeRole(roleARN string) error
 }
 
 func NewProvider(cfg *config.Config) (Provider, error) {

@@ -33,6 +33,7 @@ type Controller struct {
 }
 
 func NewController(cfg *config.Config) *Controller {
+	log.Info("Enter NewController")
 	p, err := provider.NewProvider(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create provider: %s", err)

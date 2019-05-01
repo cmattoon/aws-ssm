@@ -21,7 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -33,6 +32,7 @@ type AWSProvider struct {
 }
 
 func NewAWSProvider(cfg *config.Config) (Provider, error) {
+	log.Info("ENTER NewAWSProvider: creating new session")
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(cfg.AWSRegion),
 	})
@@ -62,6 +62,7 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 }
 
 func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[string]string, error) {
+	log.Info("ENTER GetParameterDataByPath")
 	// ppath is something like /path/to/env
 	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
 		Path:           aws.String(ppath),
@@ -83,30 +84,30 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 	return results, nil
 }
 
-func (p AWSProvider) AssumeRole(roleName string) error {
-	log.Info("ENTER AssumeRole: roleName = %s", roleName)
+func (p AWSProvider) AssumeRole(roleARN string) error {
+	log.Info("ENTER AssumeRole: roleARN = ", roleARN)
 
-	iamSvc := iam.New(p.Session)
+	// input := &sts.AssumeRoleInput{
+	// 	RoleArn:         aws.String(roleARN),
+	// 	RoleSessionName: aws.String("RoleSessionName"),
+	// }
 
-	role, err := iamSvc.GetRole(&iam.GetRoleInput{
-		RoleName: aws.String(roleName),
-	})
+	// svc := sts.New(p.Session)
+	// resp, err := svc.AssumeRole(input)
+	// if err != nil {
+	// 	log.Errorf("Failed to AssumeRole: %s", err)
+	// 	return err
+	// }
 
-	if err != nil {
-		log.Errorf("Failed to GetRole: %s", err)
-		return err
-	}
+	// creds := stscreds.NewCredentials(p.Session, *resp.AssumedRoleUser.Arn)
 
-	roleArn := role.Role.Arn
-
-	// Create the credentials from AssumeRoleProvider to assume the role
-	// referenced by roleArn.
-	creds := stscreds.NewCredentials(p.Session, *roleArn)
+	creds := stscreds.NewCredentials(p.Session, "arn:aws:iam::626314663667:role/aws-ssm-si-dev-golinks-proxy")
 	_ = creds
+	// Update session/service with new credentials
+	// p.Session = session.Must(session.NewSession(&aws.Config{Credentials: creds}))
+	p.Service = nil //ssm.New(p.Session, &aws.Config{Credentials: creds})
 
-	// TODO(salma): do we need to update the session/service?
-
-	log.Info("EXIT AssumeRole: roleARN = %s", roleArn)
+	log.Info("EXIT AssumeRole: roleARN = ", roleARN)
 
 	return nil
 }
