@@ -25,6 +25,10 @@ spec:
       labels:
         app: {{ template "ssm.name" . }}
         release: {{ .Release.Name }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+{{ . | toYaml | indent 8 }}
+      {{- end }}
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "ssm.fullname" . }}
