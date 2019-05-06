@@ -32,7 +32,6 @@ type AWSProvider struct {
 }
 
 func NewAWSProvider(cfg *config.Config) (Provider, error) {
-	log.Info("ENTER NewAWSProvider: creating new session")
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(cfg.AWSRegion),
 	})
@@ -48,6 +47,13 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 }
 
 func (p AWSProvider) GetParameterValue(name string, decrypt bool, roleArn string) (string, error) {
+	if roleArn != "" {
+		creds := stscreds.NewCredentials(p.Session, roleArn)
+		p.Service = ssm.New(p.Session, &aws.Config{
+			Credentials: creds,
+			Region:      aws.String(*p.Session.Config.Region),
+		})
+	}
 	param, err := p.Service.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(name),
 		WithDecryption: aws.Bool(decrypt),
@@ -62,7 +68,6 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool, roleArn string
 }
 
 func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool, roleArn string) (map[string]string, error) {
-	log.Info("ENTER GetParameterDataByPath with RoleArn: ", roleArn)
 	if roleArn != "" {
 		creds := stscreds.NewCredentials(p.Session, roleArn)
 		p.Service = ssm.New(p.Session, &aws.Config{

@@ -122,11 +122,10 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 			param_type = v
 		case anno.AWSParamKey, anno.V1ParamKey:
 			param_key = v
-		case "iam.amazonaws.com/role":
+		case anno.AWSRoleArn, anno.V1RoleArn:
 			role = v
 		}
 	}
-	log.Info("FromKubernetesSecret: RoleArn: ", role)
 
 	if param_name == "" || param_type == "" {
 		return nil, errors.New("Irrelevant Secret")
