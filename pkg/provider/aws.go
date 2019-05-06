@@ -47,7 +47,7 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 	}, nil
 }
 
-func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error) {
+func (p AWSProvider) GetParameterValue(name string, decrypt bool, roleArn string) (string, error) {
 	param, err := p.Service.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(name),
 		WithDecryption: aws.Bool(decrypt),
@@ -61,8 +61,15 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 	return *param.Parameter.Value, nil
 }
 
-func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[string]string, error) {
-	log.Info("ENTER GetParameterDataByPath")
+func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool, roleArn string) (map[string]string, error) {
+	log.Info("ENTER GetParameterDataByPath with RoleArn: ", roleArn)
+	if roleArn != "" {
+		creds := stscreds.NewCredentials(p.Session, roleArn)
+		p.Service = ssm.New(p.Session, &aws.Config{
+			Credentials: creds,
+			Region:      aws.String(*p.Session.Config.Region),
+		})
+	}
 	// ppath is something like /path/to/env
 	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
 		Path:           aws.String(ppath),
@@ -82,32 +89,4 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 		results[basename] = *pa.Value
 	}
 	return results, nil
-}
-
-func (p AWSProvider) AssumeRole(roleARN string) error {
-	log.Info("ENTER AssumeRole: roleARN = ", roleARN)
-
-	// input := &sts.AssumeRoleInput{
-	// 	RoleArn:         aws.String(roleARN),
-	// 	RoleSessionName: aws.String("RoleSessionName"),
-	// }
-
-	// svc := sts.New(p.Session)
-	// resp, err := svc.AssumeRole(input)
-	// if err != nil {
-	// 	log.Errorf("Failed to AssumeRole: %s", err)
-	// 	return err
-	// }
-
-	// creds := stscreds.NewCredentials(p.Session, *resp.AssumedRoleUser.Arn)
-
-	creds := stscreds.NewCredentials(p.Session, "arn:aws:iam::626314663667:role/aws-ssm-si-dev-golinks-proxy")
-	_ = creds
-	// Update session/service with new credentials
-	// p.Session = session.Must(session.NewSession(&aws.Config{Credentials: creds}))
-	p.Service = nil //ssm.New(p.Session, &aws.Config{Credentials: creds})
-
-	log.Info("EXIT AssumeRole: roleARN = ", roleARN)
-
-	return nil
 }

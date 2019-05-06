@@ -22,9 +22,8 @@ import (
 )
 
 type Provider interface {
-	GetParameterValue(string, bool) (string, error)
-	GetParameterDataByPath(string, bool) (map[string]string, error)
-	AssumeRole(roleARN string) error
+	GetParameterValue(string, bool, string) (string, error)
+	GetParameterDataByPath(string, bool, string) (map[string]string, error)
 }
 
 func NewProvider(cfg *config.Config) (Provider, error) {
@@ -39,7 +38,7 @@ type MockProvider struct {
 	DirectoryContents map[string]string
 }
 
-func (mp MockProvider) GetParameterValue(s string, b bool) (string, error) {
+func (mp MockProvider) GetParameterValue(s string, b bool, r string) (string, error) {
 	if mp.Value == "(error)" {
 		return "", errors.New(mp.DecryptedValue)
 	}
@@ -51,8 +50,6 @@ func (mp MockProvider) GetParameterValue(s string, b bool) (string, error) {
 	return mp.Value, nil
 }
 
-func (mp MockProvider) GetParameterDataByPath(s string, b bool) (map[string]string, error) {
+func (mp MockProvider) GetParameterDataByPath(s string, b bool, r string) (map[string]string, error) {
 	return mp.DirectoryContents, nil
 }
-
-// TODO(salma): add mock AssumeRole?

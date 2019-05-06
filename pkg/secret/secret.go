@@ -46,7 +46,7 @@ type Secret struct {
 	Data map[string]string
 }
 
-func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string) (*Secret, error) {
+func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string, roleArn string) (*Secret, error) {
 
 	s := &Secret{
 		Secret:     sec,
@@ -67,13 +67,13 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 	}
 
 	if s.ParamType == "String" || s.ParamType == "SecureString" {
-		value, err := p.GetParameterValue(s.ParamName, decrypt)
+		value, err := p.GetParameterValue(s.ParamName, decrypt, roleArn)
 		if err != nil {
 			return nil, err
 		}
 		s.ParamValue = value
 	} else if s.ParamType == "StringList" {
-		value, err := p.GetParameterValue(s.ParamName, decrypt)
+		value, err := p.GetParameterValue(s.ParamName, decrypt, roleArn)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,7 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 		}
 	} else if s.ParamType == "Directory" {
 		// Directory: Set each sub-key
-		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt)
+		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt, roleArn)
 		if err != nil {
 			return nil, err
 		}
@@ -126,6 +126,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 			role = v
 		}
 	}
+	log.Info("FromKubernetesSecret: RoleArn: ", role)
 
 	if param_name == "" || param_type == "" {
 		return nil, errors.New("Irrelevant Secret")
@@ -138,11 +139,6 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		}
 	}
 
-	log.Info("FromKubernetesSecret: ROLE: ", role)
-	if role != "" {
-		p.AssumeRole(role)
-	}
-
 	s, err := NewSecret(
 		secret,
 		p,
@@ -150,7 +146,8 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		secret.ObjectMeta.Namespace,
 		param_name,
 		param_type,
-		param_key)
+		param_key,
+		role)
 
 	if err != nil {
 		return nil, err
@@ -198,7 +195,7 @@ func (s *Secret) Set(key string, val string) (err error) {
 }
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
-	log.Info("*** Updating Kubernetes Secret...")
+	log.Info("Updating Kubernetes Secret...")
 	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
 }
 
