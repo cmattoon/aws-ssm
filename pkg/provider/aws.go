@@ -28,6 +28,8 @@ import (
 type AWSProvider struct {
 	Session *session.Session
 	Service *ssm.SSM
+
+	results map[string]string
 }
 
 func NewAWSProvider(cfg *config.Config) (Provider, error) {
@@ -60,7 +62,8 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 }
 
 func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[string]string, error) {
-	// ppath is something like /path/to/env
+	p.results = make(map[string]string)
+
 	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
 		Path:           aws.String(ppath),
 		Recursive:      aws.Bool(true),
@@ -72,11 +75,40 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[str
 		return nil, err
 	}
 
-	results := make(map[string]string)
 	// '/path/to/env/foo' -> 'foo': *pa.Value
 	for _, pa := range params.Parameters {
 		_, basename := path.Split(*pa.Name)
-		results[basename] = *pa.Value
+		p.results[basename] = *pa.Value
 	}
-	return results, nil
+
+	if params.NextToken == nil {
+		return p.results, nil
+	}
+
+	return p.getParameterDataByPath(ppath, decrypt, *params.NextToken)
+}
+
+func (p AWSProvider) getParameterDataByPath(ppath string, decrypt bool, nextToken string) (map[string]string, error) {
+	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
+		Path:           aws.String(ppath),
+		Recursive:      aws.Bool(true),
+		WithDecryption: aws.Bool(decrypt),
+		NextToken:      aws.String(nextToken),
+	})
+
+	if err != nil {
+		log.Errorf("Failed to GetParameterDataByPath: %s", err)
+		return nil, err
+	}
+
+	for _, pa := range params.Parameters {
+		_, basename := path.Split(*pa.Name)
+		p.results[basename] = *pa.Value
+	}
+
+	if params.NextToken == nil {
+		return p.results, nil
+	}
+
+	return p.getParameterDataByPath(ppath, decrypt, *params.NextToken)
 }

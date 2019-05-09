@@ -24,7 +24,7 @@ import (
 
 	anno "github.com/cmattoon/aws-ssm/pkg/annotations"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
