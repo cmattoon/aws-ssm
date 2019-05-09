@@ -32,7 +32,7 @@ First, export required variables, then run `make install`.
 ### AWS Credentials
 
 Uses the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-go/api/aws/credentials/#NewChainCredentials)
-  
+
 
 ### Values
 
@@ -67,9 +67,10 @@ A KUBE_CONFIG and MASTER_URL are only necessary when running outside of the clus
 | Environment | Flag         | Default        | Description                      |
 |-------------|--------------|----------------|----------------------------------|
 | AWS_REGION  | -region      | us-west-2      | The AWS Region                   |
-| METRICS_URL | -metrics-url | 0.0.0.0:9999   | Address for healthchecks/metrics | 
+| METRICS_URL | -metrics-url | 0.0.0.0:9999   | Address for healthchecks/metrics |
 | KUBE_CONFIG | -kube-config |                | The path to the kube config file |
 | MASTER_URL  | -master-url  |                | The Kubernetes master API URL    |
+| LOG_LEVEL   | -log-level   | info           | The Logrus log level             |
 
 
 Basic Usage
@@ -92,7 +93,7 @@ metadata:
 data: {}
 ```
 
-3. Run Binary 
+3. Run Binary
 
 4. A key with the name `$ParameterType` should have been added to your Secret
 
