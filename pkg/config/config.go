@@ -18,6 +18,8 @@ package config
 import (
 	"flag"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var Version = "undefined"
@@ -69,6 +71,10 @@ func (cfg *Config) ParseFlags() error {
 		getenv("AWS_REGION", "us-west-2"),
 		"AWS Region (us-west-2)")
 
+	logLevelStr := flag.String("log-level",
+		getenv("LOG_LEVEL", "info"),
+		"Logrus log level (info)")
+
 	interval := flag.Int("interval", 30, "Polling interval")
 	flag.Parse()
 
@@ -79,6 +85,13 @@ func (cfg *Config) ParseFlags() error {
 	cfg.KubeMaster = *kubeMaster
 	cfg.MetricsListenAddress = *metricAddr
 	cfg.Provider = "aws"
+
+	logLevel, err := log.ParseLevel(*logLevelStr)
+	if err != nil {
+		log.Warnf("Improper log level provided: log-level=%s. Defaulting to log-level=info", *logLevelStr)
+		logLevel = log.InfoLevel
+	}
+	log.SetLevel(logLevel)
 
 	return nil
 }
