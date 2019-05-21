@@ -12,7 +12,7 @@ DOCKER_REPO       ?= cmattoon
 DOCKER_IMAGE      ?= aws-ssm
 DOCKER_TAG        ?= $(strip $(shell git describe --tags --always --dirty))
 
-GIT_REPO          ?= $(ODCKER_REPO)
+GIT_REPO          ?= $(DOCKER_REPO)
 GIT_PROJECT       ?= $(DOCKER_IMAGE)
 GIT_URL           ?= https://github.com/$(GIT_REPO)/$(GIT_PROJECT)
 COMMIT            ?= $(shell git log -1 --pretty=format:"%h")
