@@ -1,5 +1,5 @@
 ###
-## Stage I - Build aws-ssm binary, install aws-iam-authenticator
+## Stage I - Build aws-ssm binary
 #
 FROM library/golang:1.13-alpine
 
@@ -11,10 +11,17 @@ COPY . .
 
 RUN go install -v ./...
 
+###
+## Stage II - Install aws-iam-authenticator
+#
+FROM library/golang:1.13-alpine
+
+RUN apk add --update --no-cache git
+
 RUN go get -u -v sigs.k8s.io/aws-iam-authenticator/cmd/aws-iam-authenticator
 
 ###
-## Stage II - Add ca-certificates, binaries
+## Stage III - Add ca-certificates, binaries
 #
 FROM library/alpine:3.11
 
@@ -29,7 +36,7 @@ ENV KUBE_CONFIG    ""
 
 RUN apk add --update ca-certificates
 
-COPY --from=0 /go/bin/aws-iam-authenticator /bin/aws-iam-authenticator
+COPY --from=1 /go/bin/aws-iam-authenticator /bin/aws-iam-authenticator
 COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
 
 ENTRYPOINT ["/bin/aws-ssm"]
