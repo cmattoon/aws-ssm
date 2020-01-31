@@ -1,3 +1,2 @@
 kms:
   key: "alias/aws/ssm"
-  
