@@ -37,7 +37,7 @@ endif
 EXTRA_ARGS        ?=
 
 BUILD_DATE        ?= $(shell date +"%Y-%m-%dT%H:%M:%S")
-BUILD_FLAGS       ?= -v -mod=vendor
+BUILD_FLAGS       ?= -v
 LDFLAGS           ?= -X github.com/cmattoon/aws-ssm/pkg/config.Version=$(DOCKER_TAG) -w -s
 
 .PHONY: test
