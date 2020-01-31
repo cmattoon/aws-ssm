@@ -1,6 +1,5 @@
-version: '3'
+version: "3"
 services:
-
   aws_ssm:
     image: cmattoon/aws-ssm:latest
     build:
@@ -15,5 +14,3 @@ services:
       AWS_ACCESS_KEY: ""
       AWS_SECRET_KEY: ""
       MASTER_URL: ""
-      
-        
