@@ -32,5 +32,8 @@ master_url: ""
 # Healthcheck port
 metrics_port: 9999
 
+# Pod Annotations
+podAnnotations: {}
+
 # Pod Resources
 resources: {}
