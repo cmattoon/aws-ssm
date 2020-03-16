@@ -1,30 +1,32 @@
 language: go
 go:
 - '1.14'
+services:
+- docker
 before_install:
 - make test
 jobs:
   include:
-    - stage: make-build
-      script:
-        - make build
-    - stage: docker-latest
-      script:
-        - docker build -t cmattoon/aws-ssm:dev .
-        - docker tag cmattoon/aws-ssm:dev cmattoon/aws-ssm:latest
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:dev
-        - docker push cmattoon/aws-ssm:latest
-    - stage: docker-branch
-      script:
-        - docker build -t cmattoon/aws-ssm:$TRAVIS_BRANCH .
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:$TRAVIS_BRANCH
-    - stage: docker-pr
-      script:
-        - docker build -t cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST .
-        - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
-        - docker push cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST
+  - stage: make-build
+    script:
+      - make build
+  - stage: docker-latest
+    script:
+    - docker build -t cmattoon/aws-ssm:dev .
+    - docker tag cmattoon/aws-ssm:dev cmattoon/aws-ssm:latest
+    - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker push cmattoon/aws-ssm:dev
+    - docker push cmattoon/aws-ssm:latest
+  - stage: docker-branch
+    script:
+    - docker build -t cmattoon/aws-ssm:$TRAVIS_BRANCH .
+    - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker push cmattoon/aws-ssm:$TRAVIS_BRANCH
+  - stage: docker-pr
+    script:
+    - docker build -t cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST .
+    - echo "$DOCKER_PASSWD" | docker login --username "$DOCKER_USER" --password-stdin
+    - docker push cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST
 branches:
   only:
     - master
