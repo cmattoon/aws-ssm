@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 .PHONY:
-AWS_REGION        ?= us-west-2
+AWS_REGION        ?= ap-southeast-2
 AWS_ACCESS_KEY    ?=
 AWS_SECRET_KEY    ?=
 
