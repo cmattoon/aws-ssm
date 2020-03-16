@@ -1,7 +1,7 @@
 ###
 ## Stage I - Build aws-ssm binary, install aws-iam-authenticator
 #
-FROM library/golang:1.10-alpine
+FROM library/golang:1.14-alpine
 
 RUN apk add --update --no-cache git
 
@@ -13,12 +13,10 @@ RUN go get -d -v ./...
 
 RUN go install -v ./...
 
-RUN go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
-
 ###
 ## Stage II - Add ca-certificates, binaries
 #
-FROM library/alpine:3.7
+FROM alpine:3.11
 
 ENV AWS_REGION     ""
 ENV AWS_ACCESS_KEY ""
@@ -31,7 +29,6 @@ ENV KUBE_CONFIG    ""
 
 RUN apk add --update ca-certificates
 
-COPY --from=0 /go/bin/aws-iam-authenticator /bin/aws-iam-authenticator
 COPY --from=0 /go/bin/aws-ssm /bin/aws-ssm
 
 ENTRYPOINT ["/bin/aws-ssm"]

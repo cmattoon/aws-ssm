@@ -32,7 +32,7 @@ func main() {
 	if err := cfg.ParseFlags(); err != nil {
 		log.Fatalf("Error parsing flags: %v", err)
 	}
-	log.Infof("Using config: %s", cfg)
+	log.Infof("Using config: %v", cfg)
 
 	stopChan := make(chan struct{}, 1)
 
