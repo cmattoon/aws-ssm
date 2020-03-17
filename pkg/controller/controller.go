@@ -60,14 +60,14 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 
 	i, j, k := 0, 0, 0
 	for _, sec := range secrets.Items {
-		i += 1
+		i++
 
 		obj, err := secret.FromKubernetesSecret(c.Provider, sec)
 		if err != nil {
 			// Error: Irrelevant Secret
 			continue
 		}
-		j += 1
+		j++
 
 		_, err = obj.UpdateObject(cli)
 		if err != nil {
@@ -76,14 +76,14 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 			continue
 		}
 		log.Infof("Successfully updated %s/%s", obj.Namespace, obj.Name)
-		k += 1
+		k++
 	}
 
 	log.Infof("Updated %v/%v secrets (of %v total secrets)", k, j, i)
 	return err
 }
 
-func (c *Controller) RunOnce() error {
+func (c *Controller) runOnce() error {
 	log.Info("Running...")
 	cli, err := c.KubeGen.KubeClient()
 	if err != nil {
@@ -92,13 +92,14 @@ func (c *Controller) RunOnce() error {
 	return c.HandleSecrets(cli)
 }
 
+// Run starts the polling of the k8s API server
 func (c *Controller) Run(stopChan <-chan struct{}) {
 	ticker := time.NewTicker(c.Interval)
 
 	defer ticker.Stop()
 
 	for {
-		err := c.RunOnce()
+		err := c.runOnce()
 		if err != nil {
 			log.Error(err)
 		}
