@@ -107,3 +107,8 @@ purge:
 help: ## Show this message
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: login
+login: ## Do a docker login
+login:
+	echo "${DOCKER_PASSWD}" | docker login --username "${DOCKER_USER}" --password-stdin
