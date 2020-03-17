@@ -111,4 +111,5 @@ help:
 .PHONY: login
 login: ## Do a docker login
 login:
-	echo "${DOCKER_PASSWD}" | docker login --username "${DOCKER_USER}" --password-stdin
+	env | grep -i DOCKER | cut -d '=' -f1
+	# docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWD}
