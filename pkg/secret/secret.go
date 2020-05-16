@@ -46,7 +46,7 @@ type Secret struct {
 	Data map[string]string
 }
 
-func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string) (*Secret, error) {
+func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string, roleArn string) (*Secret, error) {
 
 	s := &Secret{
 		Secret:     sec,
@@ -67,13 +67,13 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 	}
 
 	if s.ParamType == "String" || s.ParamType == "SecureString" {
-		value, err := p.GetParameterValue(s.ParamName, decrypt)
+		value, err := p.GetParameterValue(s.ParamName, decrypt, roleArn)
 		if err != nil {
 			return nil, err
 		}
 		s.ParamValue = value
 	} else if s.ParamType == "StringList" {
-		value, err := p.GetParameterValue(s.ParamName, decrypt)
+		value, err := p.GetParameterValue(s.ParamName, decrypt, roleArn)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,7 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 		}
 	} else if s.ParamType == "Directory" {
 		// Directory: Set each sub-key
-		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt)
+		all_params, err := p.GetParameterDataByPath(s.ParamName, decrypt, roleArn)
 		if err != nil {
 			return nil, err
 		}
@@ -112,6 +112,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	param_name := ""
 	param_type := ""
 	param_key := ""
+	role := ""
 
 	for k, v := range secret.ObjectMeta.Annotations {
 		switch k {
@@ -121,6 +122,8 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 			param_type = v
 		case anno.AWSParamKey, anno.V1ParamKey:
 			param_key = v
+		case anno.AWSRoleArn, anno.V1RoleArn:
+			role = v
 		}
 	}
 
@@ -142,7 +145,8 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 		secret.ObjectMeta.Namespace,
 		param_name,
 		param_type,
-		param_key)
+		param_key,
+		role)
 
 	if err != nil {
 		return nil, err

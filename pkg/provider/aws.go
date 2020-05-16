@@ -19,6 +19,7 @@ import (
 	"path"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/cmattoon/aws-ssm/pkg/config"
@@ -47,7 +48,14 @@ func NewAWSProvider(cfg *config.Config) (Provider, error) {
 	}, nil
 }
 
-func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error) {
+func (p AWSProvider) GetParameterValue(name string, decrypt bool, roleArn string) (string, error) {
+	if roleArn != "" {
+		creds := stscreds.NewCredentials(p.Session, roleArn)
+		p.Service = ssm.New(p.Session, &aws.Config{
+			Credentials: creds,
+			Region:      aws.String(*p.Session.Config.Region),
+		})
+	}
 	param, err := p.Service.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(name),
 		WithDecryption: aws.Bool(decrypt),
@@ -61,9 +69,17 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool) (string, error
 	return *param.Parameter.Value, nil
 }
 
-func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool) (map[string]string, error) {
+func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool, roleArn string) (map[string]string, error) {
 	p.results = make(map[string]string)
 
+	if roleArn != "" {
+		creds := stscreds.NewCredentials(p.Session, roleArn)
+		p.Service = ssm.New(p.Session, &aws.Config{
+			Credentials: creds,
+			Region:      aws.String(*p.Session.Config.Region),
+		})
+	}
+	// ppath is something like /path/to/env
 	params, err := p.Service.GetParametersByPath(&ssm.GetParametersByPathInput{
 		Path:           aws.String(ppath),
 		Recursive:      aws.Bool(true),

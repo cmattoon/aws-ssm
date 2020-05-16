@@ -165,7 +165,7 @@ func TestSetRefusesToOverwriteKey(t *testing.T) {
 func TestSetsValue(t *testing.T) {
 	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError", make(map[string]string)}
 	s := v1.Secret{}
-	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "")
+	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "", "")
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, testSecret.ParamValue, "FooBar123")
@@ -175,7 +175,7 @@ func TestSetsValue(t *testing.T) {
 func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
 	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{}
-	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key")
+	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key", "")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, testSecret.ParamValue, p.DecryptedValue)
 }
@@ -183,7 +183,7 @@ func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
 func TestNewSecretHandlesStringList(t *testing.T) {
 	p := provider.MockProvider{"$@#*$(@)*$", "key1=val1,key2=val2,key3=val3", make(map[string]string)}
 	s := v1.Secret{}
-	ts, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "StringList", "my/test/key")
+	ts, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "StringList", "my/test/key", "")
 	assert.True(t, err == nil)
 	exp := map[string]string{
 		"key1": "val1",
