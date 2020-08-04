@@ -1,5 +1,5 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "ssm.fullname" . }}
@@ -20,6 +20,10 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ template "ssm.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
