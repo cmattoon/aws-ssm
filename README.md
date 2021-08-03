@@ -40,20 +40,21 @@ The following chart values may be set. Only the required variables (AWS credenti
 defaults should work as-is.
 
 
-| Req'd | Value          | Default          | Example                     | Description                                                      |
-|-------|----------------|------------------|-----------------------------|------------------------------------------------------------------|
-| YES   | aws.region     | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
-| NO    | aws.access_key | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
-| NO    | aws.secret_key | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
-| NO    | kubeconfig64   | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG \| base64)`. Stored as a Secret|
-| NO    | metrics_port   | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
-| NO    | image.name     | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
-| NO    | image.tag      | latest           | <docker-tag>                | The Docker tag for the image                                     |
-| NO    | resources      | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
-| NO    | rbac.enabled   | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                      |
-| NO    | ssl.mount_host | false            | <bool>                      | Mounts {ssl.host_path} -> {ssl.mount_path} as hostVolume         |
-| NO    | ssl.host_path  | /etc/ssl/certs   | <path>                      | The SSL certs dir on the host                                    |
-| NO    | ssl.mount_path | /etc/ssl/certs   | <path>                      | The SSL certs dir in the container (dev)                         |
+| Req'd | Value             | Default          | Example                     | Description                                                      |
+|-------|-------------------|------------------|-----------------------------|------------------------------------------------------------------|
+| YES   | aws.region        | ""               | us-west-2                   | The AWS region in which the Pod is deployed                      |
+| NO    | aws.access_key    | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
+| NO    | aws.secret_key    | ""               |                             | REQUIRED when no other auth method available (e.g., IAM role)    |
+| NO    | aws.session_token | ""               |                             | OPTIONAL when using temporary access/secret keys (e.g. in CI)    |
+| NO    | kubeconfig64      | ""               | <string>                    | The output of `$(cat $KUBE_CONFIG \| base64)`. Stored as a Secret|
+| NO    | metrics_port      | 9999             | <int>                       | Serve metrics/healthchecks on this port                          |
+| NO    | image.name        | cmattoon/aws-ssm | <docker-repo>/<image-name>  | The Docker image to use for the Pod container                    |
+| NO    | image.tag         | latest           | <docker-tag>                | The Docker tag for the image                                     |
+| NO    | resources         | {}               | <dict>                      | Kubernetes Resource Requests/Limits                              |
+| NO    | rbac.enabled      | true             | <bool>                      | Whether or not to add Kubernetes RBAC stuff                      |
+| NO    | ssl.mount_host    | false            | <bool>                      | Mounts {ssl.host_path} -> {ssl.mount_path} as hostVolume         |
+| NO    | ssl.host_path     | /etc/ssl/certs   | <path>                      | The SSL certs dir on the host                                    |
+| NO    | ssl.mount_path    | /etc/ssl/certs   | <path>                      | The SSL certs dir in the container (dev)                         |
 
 
 Configuration

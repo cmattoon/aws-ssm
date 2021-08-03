@@ -6,6 +6,8 @@ aws:
   access_key: ""
   # AWS_SECRET_ACCESS_KEY
   secret_key: ""
+  # AWS_SESSION_TOKEN
+  session_token: ""
 
 # Docker Image to use
 image:
