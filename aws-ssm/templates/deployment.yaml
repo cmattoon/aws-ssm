@@ -1,5 +1,5 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "ssm.fullname" . }}
@@ -15,6 +15,10 @@ metadata:
     heritage: {{ .Release.Service }}
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "ssm.name" . }}
+      release: {{ .Release.Name }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
