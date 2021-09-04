@@ -29,18 +29,18 @@ jobs:
     - docker push cmattoon/aws-ssm:PR-$TRAVIS_PULL_REQUEST
 branches:
   only:
-  - master
-  - "/^v.*$/"
+    - master
+    - "/^v.*$/"
 stages:
-- name: make-build
-- name: docker-latest
-  if: branch = master AND type != pull_request
-- name: docker-branch
-  if: branch != master AND type != pull_request
-- name: docker-pr
-  if: type == pull_request
+  - name: make-build
+  - name: docker-latest
+    if: branch = master AND type != pull_request
+  - name: docker-branch
+    if: branch != master AND type != pull_request
+  - name: docker-pr
+    if: type == pull_request
 after_success:
-- bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash)
 deploy:
   provider: releases
   api_key:
@@ -48,4 +48,3 @@ deploy:
   file: build/aws-ssm
   on:
     tags: true
-

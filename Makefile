@@ -34,7 +34,7 @@ MOUNT_SSL=false
 else
 MOUNT_SSL=true
 endif
-EXTRA_ARGS        ?= 
+EXTRA_ARGS        ?=
 
 BUILD_DATE        ?= $(shell date +"%Y-%m-%dT%H:%M:%S")
 BUILD_FLAGS       ?= -v
@@ -76,7 +76,7 @@ container:
 
 .PHONY: chart
 chart: ## Lint chart
-chart: 
+chart:
 	helm lint aws-ssm
 
 .PHONY: push
