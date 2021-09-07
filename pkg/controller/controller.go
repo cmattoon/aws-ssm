@@ -27,9 +27,10 @@ import (
 )
 
 type Controller struct {
-	Interval time.Duration
-	Provider provider.Provider
-	KubeGen  ClientGenerator
+	Interval      time.Duration
+	Provider      provider.Provider
+	KubeGen       ClientGenerator
+	LabelSelector string
 }
 
 func NewController(cfg *config.Config) *Controller {
@@ -53,7 +54,7 @@ func NewController(cfg *config.Config) *Controller {
 }
 
 func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
-	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{})
+	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{LabelSelector: c.LabelSelector})
 	if err != nil {
 		log.Fatalf("Error retrieving secrets: %s", err)
 	}
