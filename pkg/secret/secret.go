@@ -16,6 +16,7 @@
 package secret
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -25,6 +26,7 @@ import (
 	anno "github.com/cmattoon/aws-ssm/pkg/annotations"
 	"github.com/cmattoon/aws-ssm/pkg/provider"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -44,9 +46,11 @@ type Secret struct {
 	ParamValue string
 	// The data to add to Kubernetes Secret Data
 	Data map[string]string
+	// Context for k8s API
+	Context context.Context
 }
 
-func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string, roleArn string) (*Secret, error) {
+func NewSecret(ctx context.Context, sec v1.Secret, p provider.Provider, secret_name string, secret_namespace string, param_name string, param_type string, param_key string, roleArn string) (*Secret, error) {
 
 	s := &Secret{
 		Secret:     sec,
@@ -57,6 +61,7 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 		ParamKey:   param_key,
 		ParamValue: "",
 		Data:       map[string]string{},
+		Context:    ctx,
 	}
 
 	log.Debugf("Getting value for '%s/%s'", s.Namespace, s.Name)
@@ -108,7 +113,7 @@ func NewSecret(sec v1.Secret, p provider.Provider, secret_name string, secret_na
 }
 
 // FromKubernetesSecret returns an internal Secret struct, if the v1.Secret is properly annotated.
-func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error) {
+func FromKubernetesSecret(ctx context.Context, p provider.Provider, secret v1.Secret) (*Secret, error) {
 	param_name := ""
 	param_type := ""
 	param_key := ""
@@ -139,6 +144,7 @@ func FromKubernetesSecret(p provider.Provider, secret v1.Secret) (*Secret, error
 	}
 
 	s, err := NewSecret(
+		ctx,
 		secret,
 		p,
 		secret.ObjectMeta.Name,
@@ -187,7 +193,7 @@ func (s *Secret) Set(key string, val string) (err error) {
 	// StringData isn't populated initially, so check s.Data
 	if _, ok := s.Data[key]; ok {
 		// Refuse to overwite existing keys
-		return errors.New(fmt.Sprintf("Key '%s' already exists for Secret %s/%s", key, s.Namespace, s.Name))
+		return fmt.Errorf("Key '%s' already exists for Secret %s/%s", key, s.Namespace, s.Name)
 	}
 	s.Secret.StringData[key] = val
 	return
@@ -195,7 +201,7 @@ func (s *Secret) Set(key string, val string) (err error) {
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
 	log.Info("Updating Kubernetes Secret...")
-	return cli.CoreV1().Secrets(s.Namespace).Update(&s.Secret)
+	return cli.CoreV1().Secrets(s.Namespace).Update(s.Context, &s.Secret, metav1.UpdateOptions{})
 }
 
 func safeKeyName(key string) string {

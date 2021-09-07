@@ -16,6 +16,7 @@
 package controller
 
 import (
+	"context"
 	"time"
 
 	"github.com/cmattoon/aws-ssm/pkg/config"
@@ -26,12 +27,15 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// Controller is our main struct
 type Controller struct {
 	Interval time.Duration
 	Provider provider.Provider
 	KubeGen  ClientGenerator
+	Context  context.Context
 }
 
+// NewController initialises above struct
 func NewController(cfg *config.Config) *Controller {
 	p, err := provider.NewProvider(cfg)
 	if err != nil {
@@ -47,13 +51,15 @@ func NewController(cfg *config.Config) *Controller {
 		Interval: time.Duration(cfg.Interval) * time.Second,
 		Provider: p,
 		KubeGen:  scg,
+		Context:  context.Background(),
 	}
 
 	return ctrl
 }
 
+// HandleSecrets loops through all k8s api secrets
 func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
-	secrets, err := cli.CoreV1().Secrets("").List(metav1.ListOptions{})
+	secrets, err := cli.CoreV1().Secrets("").List(c.Context, metav1.ListOptions{})
 	if err != nil {
 		log.Fatalf("Error retrieving secrets: %s", err)
 	}
@@ -62,7 +68,7 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 	for _, sec := range secrets.Items {
 		i++
 
-		obj, err := secret.FromKubernetesSecret(c.Provider, sec)
+		obj, err := secret.FromKubernetesSecret(c.Context, c.Provider, sec)
 		if err != nil {
 			// Error: Irrelevant Secret
 			continue
@@ -109,6 +115,19 @@ func (c *Controller) Run(stopChan <-chan struct{}) {
 		case <-stopChan:
 			log.Info("Ending main controller loop")
 			return
+		}
+	}
+}
+
+// Watch listens to secret create API events to create a secret
+func (c *Controller) Watch(stopChan <-chan struct{}) {
+	for {
+		select {
+		case <-stopChan:
+			log.Info("Ending watch")
+			return
+		default:
+			log.Info("hello watcher...")
 		}
 	}
 }
