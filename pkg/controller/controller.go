@@ -89,6 +89,23 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 	return err
 }
 
+// WatchSecrets listens for secrets that are created and processes them immediately
+func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
+	secrets, err := cli.CoreV1().Secrets("").List(c.Context, metav1.ListOptions{
+		Watch: true,
+	})
+
+	for _, sec := range secrets.Items {
+		log.Infof("New secret %s in namespace: %s", sec.Name, sec.Namespace)
+	}
+
+	if err != nil {
+		log.Fatalf("Error retrieving secrets: %s", err)
+		return err
+	}
+	return nil
+}
+
 func (c *Controller) runOnce() error {
 	log.Info("Running...")
 	cli, err := c.KubeGen.KubeClient()
@@ -121,13 +138,26 @@ func (c *Controller) Run(stopChan <-chan struct{}) {
 
 // Watch listens to secret create API events to create a secret
 func (c *Controller) Watch(stopChan <-chan struct{}) {
+	log.Info("hello watcher...")
+	cli, err := c.KubeGen.KubeClient()
+	if err != nil {
+		log.Error(err)
+	}
+
+	if err != nil {
+		log.Fatalf("Error with kubernetes client: %s", err)
+	}
+
+	err = c.WatchSecrets(cli)
+	if err != nil {
+		log.Fatalf("Error with WatchSecrets: %s", err)
+	}
+
 	for {
 		select {
 		case <-stopChan:
 			log.Info("Ending watch")
 			return
-		default:
-			log.Info("hello watcher...")
 		}
 	}
 }
