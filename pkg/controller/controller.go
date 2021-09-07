@@ -45,9 +45,10 @@ func NewController(cfg *config.Config) *Controller {
 	}
 
 	ctrl := &Controller{
-		Interval: time.Duration(cfg.Interval) * time.Second,
-		Provider: p,
-		KubeGen:  scg,
+		Interval:      time.Duration(cfg.Interval) * time.Second,
+		Provider:      p,
+		KubeGen:       scg,
+		LabelSelector: cfg.LabelSelector,
 	}
 
 	return ctrl
