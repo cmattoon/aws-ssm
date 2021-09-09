@@ -41,7 +41,9 @@ func main() {
 
 	ctrl := controller.NewController(cfg)
 
-	go ctrl.Watch(stopChan)
+	if cfg.EnableWatcher {
+		go ctrl.Watch(stopChan)
+	}
 	ctrl.Run(stopChan)
 }
 

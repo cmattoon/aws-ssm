@@ -42,6 +42,7 @@ type Config struct {
 	MetricsListenAddress string
 	Provider             string
 	LabelSelector        string
+	EnableWatcher        bool
 }
 
 func DefaultConfig() *Config {
@@ -53,6 +54,7 @@ func DefaultConfig() *Config {
 		MetricsListenAddress: "0.0.0.0:9999",
 		Provider:             "aws",
 		LabelSelector:        "",
+		EnableWatcher:        false,
 	}
 	return cfg
 }
@@ -87,6 +89,8 @@ func (cfg *Config) ParseFlags() error {
 		"Label selector for secrets to fetch from k8s API",
 	)
 
+	enableWatcher := flag.Bool("watch", false, "Turn on watcher which listens for k8s API events as well as polling")
+
 	flag.Parse()
 
 	i, err := strconv.Atoi(*interval)
@@ -102,6 +106,7 @@ func (cfg *Config) ParseFlags() error {
 	cfg.MetricsListenAddress = *metricAddr
 	cfg.Provider = "aws"
 	cfg.LabelSelector = *labelSelector
+	cfg.EnableWatcher = *enableWatcher
 
 	logLevel, err := log.ParseLevel(*logLevelStr)
 	if err != nil {
