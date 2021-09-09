@@ -18,6 +18,7 @@ package config
 import (
 	"flag"
 	"os"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -75,12 +76,19 @@ func (cfg *Config) ParseFlags() error {
 		getenv("LOG_LEVEL", "info"),
 		"Logrus log level (info)")
 
-	interval := flag.Int("interval", 30, "Polling interval")
+	interval := flag.String("interval",
+		getenv("SCAN_INTERVAL", "30"),
+		"Polling interval")
 	flag.Parse()
 
+	i, err := strconv.Atoi(*interval)
+	if err != nil {
+		log.Error("Could not parse interval - defaulting to 30 seconds")
+		i = 30
+	}
 	// Override config values from CLI
 	cfg.AWSRegion = *region
-	cfg.Interval = *interval
+	cfg.Interval = i
 	cfg.KubeConfig = *kubeConfig
 	cfg.KubeMaster = *kubeMaster
 	cfg.MetricsListenAddress = *metricAddr

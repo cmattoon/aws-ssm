@@ -23,7 +23,9 @@ import (
 	"github.com/cmattoon/aws-ssm/pkg/provider"
 	"github.com/cmattoon/aws-ssm/pkg/secret"
 	log "github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -91,17 +93,32 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 
 // WatchSecrets listens for secrets that are created and processes them immediately
 func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
-	secrets, err := cli.CoreV1().Secrets("").List(c.Context, metav1.ListOptions{
-		Watch: true,
-	})
-
-	for _, sec := range secrets.Items {
-		log.Infof("New secret %s in namespace: %s", sec.Name, sec.Namespace)
+	watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{})
+	if err != nil {
+		log.Errorf("Error retrieving secrets: %s", err)
+		return err
 	}
 
-	if err != nil {
-		log.Fatalf("Error retrieving secrets: %s", err)
-		return err
+	for event := range watcher.ResultChan() {
+		sec := event.Object.(*v1.Secret)
+		switch event.Type {
+		case watch.Added:
+			log.Infof("Secret %s/%s added", sec.ObjectMeta.Namespace, sec.ObjectMeta.Name)
+			obj, err := secret.FromKubernetesSecret(c.Context, c.Provider, *sec)
+			if err != nil {
+				// Error: Irrelevant Secret
+				continue
+			}
+
+			_, err = obj.UpdateObject(cli)
+			if err != nil {
+				log.Warnf("Failed to update object %s/%s", obj.Namespace, obj.Name)
+				log.Warn(err.Error())
+				continue
+			}
+			log.Infof("Successfully updated %s/%s", obj.Namespace, obj.Name)
+		default: // do nothing
+		}
 	}
 	return nil
 }
@@ -121,6 +138,8 @@ func (c *Controller) Run(stopChan <-chan struct{}) {
 
 	defer ticker.Stop()
 
+	log.Info("Starting run...")
+
 	for {
 		err := c.runOnce()
 		if err != nil {
@@ -138,16 +157,12 @@ func (c *Controller) Run(stopChan <-chan struct{}) {
 
 // Watch listens to secret create API events to create a secret
 func (c *Controller) Watch(stopChan <-chan struct{}) {
-	log.Info("hello watcher...")
 	cli, err := c.KubeGen.KubeClient()
-	if err != nil {
-		log.Error(err)
-	}
-
 	if err != nil {
 		log.Fatalf("Error with kubernetes client: %s", err)
 	}
 
+	log.Info("My Watch begins...")
 	err = c.WatchSecrets(cli)
 	if err != nil {
 		log.Fatalf("Error with WatchSecrets: %s", err)
