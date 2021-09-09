@@ -31,10 +31,11 @@ import (
 
 // Controller is our main struct
 type Controller struct {
-	Interval time.Duration
-	Provider provider.Provider
-	KubeGen  ClientGenerator
-	Context  context.Context
+	Interval      time.Duration
+	Provider      provider.Provider
+	KubeGen       ClientGenerator
+	Context       context.Context
+	LabelSelector string
 }
 
 // NewController initialises above struct
@@ -50,10 +51,11 @@ func NewController(cfg *config.Config) *Controller {
 	}
 
 	ctrl := &Controller{
-		Interval: time.Duration(cfg.Interval) * time.Second,
-		Provider: p,
-		KubeGen:  scg,
-		Context:  context.Background(),
+		Interval:      time.Duration(cfg.Interval) * time.Second,
+		Provider:      p,
+		KubeGen:       scg,
+		Context:       context.Background(),
+		LabelSelector: cfg.LabelSelector,
 	}
 
 	return ctrl
@@ -61,7 +63,7 @@ func NewController(cfg *config.Config) *Controller {
 
 // HandleSecrets loops through all k8s api secrets
 func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
-	secrets, err := cli.CoreV1().Secrets("").List(c.Context, metav1.ListOptions{})
+	secrets, err := cli.CoreV1().Secrets("").List(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector})
 	if err != nil {
 		log.Fatalf("Error retrieving secrets: %s", err)
 	}
@@ -93,7 +95,7 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 
 // WatchSecrets listens for secrets that are created and processes them immediately
 func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
-	watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{})
+	watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector})
 	if err != nil {
 		log.Errorf("Error retrieving secrets: %s", err)
 		return err

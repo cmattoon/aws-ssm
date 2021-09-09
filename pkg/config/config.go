@@ -41,6 +41,7 @@ type Config struct {
 	KubeMaster           string
 	MetricsListenAddress string
 	Provider             string
+	LabelSelector        string
 }
 
 func DefaultConfig() *Config {
@@ -51,6 +52,7 @@ func DefaultConfig() *Config {
 		KubeMaster:           "",
 		MetricsListenAddress: "0.0.0.0:9999",
 		Provider:             "aws",
+		LabelSelector:        "",
 	}
 	return cfg
 }
@@ -79,6 +81,12 @@ func (cfg *Config) ParseFlags() error {
 	interval := flag.String("interval",
 		getenv("SCAN_INTERVAL", "30"),
 		"Polling interval")
+
+	labelSelector := flag.String("label-selector",
+		getenv("K8S_LABEL_SELECTOR", ""),
+		"Label selector for secrets to fetch from k8s API",
+	)
+
 	flag.Parse()
 
 	i, err := strconv.Atoi(*interval)
@@ -93,6 +101,7 @@ func (cfg *Config) ParseFlags() error {
 	cfg.KubeMaster = *kubeMaster
 	cfg.MetricsListenAddress = *metricAddr
 	cfg.Provider = "aws"
+	cfg.LabelSelector = *labelSelector
 
 	logLevel, err := log.ParseLevel(*logLevelStr)
 	if err != nil {
