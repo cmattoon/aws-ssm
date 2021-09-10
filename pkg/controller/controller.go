@@ -85,7 +85,7 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 			log.Warn(err.Error())
 			continue
 		}
-		log.Infof("Successfully updated %s/%s", obj.Namespace, obj.Name)
+		log.Debugf("Successfully updated %s/%s", obj.Namespace, obj.Name)
 		k++
 	}
 
@@ -105,7 +105,7 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 		sec := event.Object.(*v1.Secret)
 		switch event.Type {
 		case watch.Added:
-			log.Infof("Secret %s/%s added", sec.ObjectMeta.Namespace, sec.ObjectMeta.Name)
+			log.Debugf("Secret %s/%s added", sec.ObjectMeta.Namespace, sec.ObjectMeta.Name)
 			obj, err := secret.FromKubernetesSecret(c.Context, c.Provider, *sec)
 			if err != nil {
 				// Error: Irrelevant Secret
@@ -126,7 +126,7 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 }
 
 func (c *Controller) runOnce() error {
-	log.Info("Running...")
+	log.Debug("Running...")
 	cli, err := c.KubeGen.KubeClient()
 	if err != nil {
 		log.Fatalf("Error with kubernetes client: %s", err)
@@ -139,8 +139,6 @@ func (c *Controller) Run(stopChan <-chan struct{}) {
 	ticker := time.NewTicker(c.Interval)
 
 	defer ticker.Stop()
-
-	log.Info("Starting run...")
 
 	for {
 		err := c.runOnce()

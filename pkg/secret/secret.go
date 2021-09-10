@@ -138,7 +138,7 @@ func FromKubernetesSecret(ctx context.Context, p provider.Provider, secret v1.Se
 
 	if param_name != "" && param_type != "" {
 		if param_type == "SecureString" && param_key == "" {
-			log.Info("No KMS key defined. Using default key 'alias/aws/ssm'")
+			log.Debug("No KMS key defined. Using default key 'alias/aws/ssm'")
 			param_key = "alias/aws/ssm"
 		}
 	}
@@ -200,7 +200,7 @@ func (s *Secret) Set(key string, val string) (err error) {
 }
 
 func (s *Secret) UpdateObject(cli kubernetes.Interface) (result *v1.Secret, err error) {
-	log.Info("Updating Kubernetes Secret...")
+	log.Debug("Updating Kubernetes Secret...")
 	return cli.CoreV1().Secrets(s.Namespace).Update(s.Context, &s.Secret, metav1.UpdateOptions{})
 }
 
