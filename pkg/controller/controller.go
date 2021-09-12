@@ -119,11 +119,11 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 
 					_, err = obj.UpdateObject(cli)
 					if err != nil {
-						log.Warnf("Failed to update object %s/%s", obj.Namespace, obj.Name)
+						log.Warnf("Watcher failed to update object %s/%s", obj.Namespace, obj.Name)
 						log.Warn(err.Error())
 						continue
 					}
-					log.Infof("Successfully updated %s/%s", obj.Namespace, obj.Name)
+					log.Infof("Watcher successfully updated %s/%s", obj.Namespace, obj.Name)
 				default: // do nothing
 				}
 			}
