@@ -95,34 +95,41 @@ func (c *Controller) HandleSecrets(cli kubernetes.Interface) error {
 
 // WatchSecrets listens for secrets that are created and processes them immediately
 func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
-	watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector})
-	if err != nil {
-		log.Errorf("Error retrieving secrets: %s", err)
-		return err
-	}
-
-	for event := range watcher.ResultChan() {
-		sec := event.Object.(*v1.Secret)
-		switch event.Type {
-		case watch.Added:
-			log.Debugf("Secret %s/%s added", sec.ObjectMeta.Namespace, sec.ObjectMeta.Name)
-			obj, err := secret.FromKubernetesSecret(c.Context, c.Provider, *sec)
+	for {
+		select {
+		case <-c.Context.Done():
+			return nil
+		default:
+			watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector})
 			if err != nil {
-				// Error: Irrelevant Secret
-				continue
+				log.Errorf("Error retrieving secrets: %s", err)
+				return err
 			}
 
-			_, err = obj.UpdateObject(cli)
-			if err != nil {
-				log.Warnf("Failed to update object %s/%s", obj.Namespace, obj.Name)
-				log.Warn(err.Error())
-				continue
+			for event := range watcher.ResultChan() {
+				sec := event.Object.(*v1.Secret)
+				switch event.Type {
+				case watch.Added:
+					log.Debugf("Secret %s/%s added", sec.ObjectMeta.Namespace, sec.ObjectMeta.Name)
+					obj, err := secret.FromKubernetesSecret(c.Context, c.Provider, *sec)
+					if err != nil {
+						// Error: Irrelevant Secret
+						continue
+					}
+
+					_, err = obj.UpdateObject(cli)
+					if err != nil {
+						log.Warnf("Failed to update object %s/%s", obj.Namespace, obj.Name)
+						log.Warn(err.Error())
+						continue
+					}
+					log.Infof("Successfully updated %s/%s", obj.Namespace, obj.Name)
+				default: // do nothing
+				}
 			}
-			log.Infof("Successfully updated %s/%s", obj.Namespace, obj.Name)
-		default: // do nothing
+			return nil
 		}
 	}
-	return nil
 }
 
 func (c *Controller) runOnce() error {
@@ -168,11 +175,8 @@ func (c *Controller) Watch(stopChan <-chan struct{}) {
 		log.Fatalf("Error with WatchSecrets: %s", err)
 	}
 
-	for {
-		select {
-		case <-stopChan:
-			log.Info("Ending watch")
-			return
-		}
+	for range stopChan {
+		log.Info("Ending watch")
+		return
 	}
 }
