@@ -24,6 +24,7 @@ import (
 	"github.com/cmattoon/aws-ssm/pkg/secret"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -98,15 +99,44 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 	for {
 		select {
 		case <-c.Context.Done():
+			log.Info("context finished processing")
 			return nil
 		default:
-			watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector})
+			// get newest secret to find resourceVersion
+			rv := "0"
+			secrets, err := cli.CoreV1().Secrets(v1.NamespaceAll).List(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector})
+			if err != nil {
+				log.Errorf("Error listing secrets: %s", err)
+				return err
+			}
+			isList := meta.IsListType(secrets)
+			if isList {
+				// the resourceVersion of list objects is ~now but won't return
+				// an initial watch event
+				rv, err = meta.NewAccessor().ResourceVersion(secrets)
+				if err != nil {
+					return err
+				}
+			}
+			watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector, ResourceVersion: rv})
 			if err != nil {
 				log.Errorf("Error retrieving secrets: %s", err)
 				return err
 			}
 
-			for event := range watcher.ResultChan() {
+			events := watcher.ResultChan()
+
+			log.Infof("inital events length: %d", len(events))
+			// initially empty the channel
+			for len(events) > 0 {
+				<-events
+			}
+
+			log.Infof("events length: %d", len(events))
+
+			// loop for new events
+			for {
+				event := <-events
 				sec := event.Object.(*v1.Secret)
 				switch event.Type {
 				case watch.Added:
