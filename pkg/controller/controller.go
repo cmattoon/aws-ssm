@@ -118,6 +118,7 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 					return err
 				}
 			}
+			log.Infof("resourceVersion: %s", rv)
 			watcher, err := cli.CoreV1().Secrets(v1.NamespaceAll).Watch(c.Context, metav1.ListOptions{LabelSelector: c.LabelSelector, ResourceVersion: rv})
 			if err != nil {
 				log.Errorf("Error retrieving secrets: %s", err)
@@ -125,14 +126,6 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 			}
 
 			events := watcher.ResultChan()
-
-			log.Infof("inital events length: %d", len(events))
-			// initially empty the channel
-			for len(events) > 0 {
-				<-events
-			}
-
-			log.Infof("events length: %d", len(events))
 
 			// loop for new events
 			for {
