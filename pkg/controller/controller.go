@@ -127,7 +127,6 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 				default: // do nothing
 				}
 			}
-			return nil
 		}
 	}
 }
