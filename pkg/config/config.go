@@ -109,6 +109,10 @@ func (cfg *Config) ParseFlags() error {
 	cfg.EnableWatcher = *enableWatcher
 
 	logLevel, err := log.ParseLevel(*logLevelStr)
+	json := getenv("LOG_FORMAT", "")
+	if json == "json" {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
 	if err != nil {
 		log.Warnf("Improper log level provided: log-level=%s. Defaulting to log-level=info", *logLevelStr)
 		logLevel = log.InfoLevel

@@ -130,10 +130,12 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 			// loop for new events
 			for {
 				event := <-events
+				if event.Object == nil {
+					continue // skip the input
+				}
 				sec := event.Object.(*v1.Secret)
 				switch event.Type {
 				case watch.Added:
-					log.Debugf("Secret %s/%s added", sec.ObjectMeta.Namespace, sec.ObjectMeta.Name)
 					obj, err := secret.FromKubernetesSecret(c.Context, c.Provider, *sec)
 					if err != nil {
 						// Error: Irrelevant Secret
