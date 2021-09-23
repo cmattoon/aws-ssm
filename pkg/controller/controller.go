@@ -127,10 +127,20 @@ func (c *Controller) WatchSecrets(cli kubernetes.Interface) error {
 
 			events := watcher.ResultChan()
 
+			// fairly basic handling of nil beatdown. I believe it happens when the k8s service account token expires and the watch
+			// cli doesn't update it.
+			nilCounter := 0
+			maxNils := 20
+
 			// loop for new events
 			for {
 				event := <-events
 				if event.Object == nil {
+					log.Info("nil object from watch - skipping.")
+					nilCounter++
+					if nilCounter > maxNils {
+						break
+					}
 					continue // skip the input
 				}
 				sec := event.Object.(*v1.Secret)
