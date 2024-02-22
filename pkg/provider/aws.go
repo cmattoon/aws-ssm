@@ -62,7 +62,7 @@ func (p AWSProvider) GetParameterValue(name string, decrypt bool, roleArn string
 	})
 
 	if err != nil {
-		log.Errorf("Failed to GetParameterValue: %s", err)
+		log.Errorf("Failed to GetParameterValue: %s. Error: %s", name, err)
 		return "", err
 	}
 
@@ -87,7 +87,7 @@ func (p AWSProvider) GetParameterDataByPath(ppath string, decrypt bool, roleArn 
 	})
 
 	if err != nil {
-		log.Errorf("Failed to GetParameterDataByPath: %s", err)
+		log.Errorf("Failed to GetParameterDataByPath on path: %s. Error: %s", ppath, err)
 		return nil, err
 	}
 
@@ -113,7 +113,7 @@ func (p AWSProvider) getParameterDataByPath(ppath string, decrypt bool, nextToke
 	})
 
 	if err != nil {
-		log.Errorf("Failed to GetParameterDataByPath: %s", err)
+		log.Errorf("Failed to GetParameterDataByPath on path: %s. Error: %s", ppath, err)
 		return nil, err
 	}
 

@@ -1,6 +1,7 @@
 .git
 *~
 
+aws-ssm/**
 build/**
 examples/**
 scripts/**

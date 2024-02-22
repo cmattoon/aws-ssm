@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 .PHONY:
-AWS_REGION        ?= us-east-2
+AWS_REGION        ?= ap-southeast-2
 AWS_ACCESS_KEY    ?=
 AWS_SECRET_KEY    ?=
 
@@ -108,3 +108,8 @@ help: ## Show this message
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: login
+login: ## Do a docker login
+login:
+	env | grep -i DOCKER | cut -d '=' -f1
+	# docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWD}
