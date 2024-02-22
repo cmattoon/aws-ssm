@@ -18,6 +18,7 @@ package config
 import (
 	"flag"
 	"os"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -40,6 +41,8 @@ type Config struct {
 	KubeMaster           string
 	MetricsListenAddress string
 	Provider             string
+	LabelSelector        string
+	EnableWatcher        bool
 }
 
 func DefaultConfig() *Config {
@@ -50,6 +53,8 @@ func DefaultConfig() *Config {
 		KubeMaster:           "",
 		MetricsListenAddress: "0.0.0.0:9999",
 		Provider:             "aws",
+		LabelSelector:        "",
+		EnableWatcher:        false,
 	}
 	return cfg
 }
@@ -75,18 +80,39 @@ func (cfg *Config) ParseFlags() error {
 		getenv("LOG_LEVEL", "info"),
 		"Logrus log level (info)")
 
-	interval := flag.Int("interval", 30, "Polling interval")
+	interval := flag.String("interval",
+		getenv("SCAN_INTERVAL", "30"),
+		"Polling interval")
+
+	labelSelector := flag.String("label-selector",
+		getenv("K8S_LABEL_SELECTOR", ""),
+		"Label selector for secrets to fetch from k8s API",
+	)
+
+	enableWatcher := flag.Bool("watch", false, "Turn on watcher which listens for k8s API events as well as polling")
+
 	flag.Parse()
 
+	i, err := strconv.Atoi(*interval)
+	if err != nil {
+		log.Error("Could not parse interval - defaulting to 30 seconds")
+		i = 30
+	}
 	// Override config values from CLI
 	cfg.AWSRegion = *region
-	cfg.Interval = *interval
+	cfg.Interval = i
 	cfg.KubeConfig = *kubeConfig
 	cfg.KubeMaster = *kubeMaster
 	cfg.MetricsListenAddress = *metricAddr
 	cfg.Provider = "aws"
+	cfg.LabelSelector = *labelSelector
+	cfg.EnableWatcher = *enableWatcher
 
 	logLevel, err := log.ParseLevel(*logLevelStr)
+	json := getenv("LOG_FORMAT", "")
+	if json == "json" {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
 	if err != nil {
 		log.Warnf("Improper log level provided: log-level=%s. Defaulting to log-level=info", *logLevelStr)
 		logLevel = log.InfoLevel

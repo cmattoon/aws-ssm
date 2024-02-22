@@ -17,12 +17,13 @@ package secret
 
 import (
 	//"reflect"
+	"context"
 	"testing"
 
 	"github.com/cmattoon/aws-ssm/pkg/provider"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -165,7 +166,8 @@ func TestSetRefusesToOverwriteKey(t *testing.T) {
 func TestSetsValue(t *testing.T) {
 	p := provider.MockProvider{"FooBar123", "PlaintextIsAnError", make(map[string]string)}
 	s := v1.Secret{}
-	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "", "")
+	ctx := context.TODO()
+	testSecret, err := NewSecret(ctx, s, p, "foo-secret", "namespace", "foo-param", "String", "", "")
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, testSecret.ParamValue, "FooBar123")
@@ -175,7 +177,8 @@ func TestSetsValue(t *testing.T) {
 func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
 	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{}
-	testSecret, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key", "")
+	ctx := context.TODO()
+	testSecret, err := NewSecret(ctx, s, p, "foo-secret", "namespace", "foo-param", "String", "my/test/key", "")
 	assert.Equal(t, nil, err)
 	assert.Equal(t, testSecret.ParamValue, p.DecryptedValue)
 }
@@ -183,7 +186,8 @@ func TestNewSecretDecryptsIfKeyIsSet(t *testing.T) {
 func TestNewSecretHandlesStringList(t *testing.T) {
 	p := provider.MockProvider{"$@#*$(@)*$", "key1=val1,key2=val2,key3=val3", make(map[string]string)}
 	s := v1.Secret{}
-	ts, err := NewSecret(s, p, "foo-secret", "namespace", "foo-param", "StringList", "my/test/key", "")
+	ctx := context.TODO()
+	ts, err := NewSecret(ctx, s, p, "foo-secret", "namespace", "foo-param", "StringList", "my/test/key", "")
 	assert.True(t, err == nil)
 	exp := map[string]string{
 		"key1": "val1",
@@ -202,8 +206,9 @@ func TestNewSecretHandlesStringList(t *testing.T) {
 func TestFromKubernetesSecretReturnsErrorIfIrrelevant(t *testing.T) {
 	p := provider.MockProvider{"$@#*$(@)*$", "FooBar123", make(map[string]string)}
 	s := v1.Secret{} // No annotations, so no params
+	ctx := context.TODO()
 
-	_, err := FromKubernetesSecret(p, s)
+	_, err := FromKubernetesSecret(ctx, p, s)
 	if err.Error() != "Irrelevant Secret" {
 		t.Fail()
 	}
@@ -223,7 +228,9 @@ func TestFromKubernetesSecretUsesDefaultEncryptionKey(t *testing.T) {
 		},
 	}
 
-	ks, err := FromKubernetesSecret(p, s)
+	ctx := context.TODO()
+
+	ks, err := FromKubernetesSecret(ctx, p, s)
 
 	if err != nil || ks.ParamKey != "alias/aws/ssm" || ks.ParamValue != "FooBar123" {
 		t.Fail()
@@ -243,7 +250,9 @@ func TestFromKubernetesSecretUsesSpecifiedEncryptionKey(t *testing.T) {
 		},
 	}
 
-	ks, err := FromKubernetesSecret(p, s)
+	ctx := context.TODO()
+
+	ks, err := FromKubernetesSecret(ctx, p, s)
 
 	if err != nil || ks.ParamKey != "foo/bar/baz" || ks.ParamValue != "FooBar123" {
 		t.Fail()
